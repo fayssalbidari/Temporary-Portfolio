@@ -202,7 +202,7 @@ h6 {
   top: calc(109 * var(--g));
   left: 0;
   width: 100%;
-  height: calc(584 * var(--g));
+  height: calc(700 * var(--g));
   background-image: radial-gradient(
     circle at calc(1 * var(--g)) calc(1 * var(--g)),
     var(--color-dot) 0 calc(1 * var(--g)),
