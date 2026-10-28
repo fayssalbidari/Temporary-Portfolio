@@ -36,3 +36,20 @@
   max-width: calc(335 / var(--base-screen-width) * 100vw);
 }
 
+
+@media (max-width: 900px) {
+  .heroContent {
+    top: 96px;
+    grid-template-columns: 1fr;
+    row-gap: 24px;
+  }
+
+  .heroRole,
+  .heroCopy {
+    grid-column: 1;
+  }
+
+  .heroCopy {
+    max-width: 335px;
+  }
+}

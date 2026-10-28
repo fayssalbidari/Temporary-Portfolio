@@ -215,3 +215,26 @@ h6 {
     display: none;
   }
 }
+
+/* TEMPORAIRE : masque le badge « Powered by Netlify » injecté par Netlify pendant la phase de test.
+   À supprimer ce bloc quand le site sera hébergé ailleurs ou sur un plan sans badge. */
+.nl-wrap {
+  display: none !important;
+}
+
+/* Le texte du hero apparaît une fois l'intro du slider terminée (voir Slider.tsx).
+   Filet de sécurité : s'il y a un souci, il s'affiche quand même au bout de 4 s. */
+[data-intro-gate] {
+  transition: opacity 0.9s ease;
+}
+
+html:not([data-intro="done"]) [data-intro-gate] {
+  opacity: 0;
+  animation: intro-gate-fallback 0s linear 4s forwards;
+}
+
+@keyframes intro-gate-fallback {
+  to {
+    opacity: 1;
+  }
+}

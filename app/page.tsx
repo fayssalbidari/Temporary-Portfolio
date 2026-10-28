@@ -1,4 +1,7 @@
 import Hero from "@/components/Hero/Hero";
+import Slider from "@/components/Slider/Slider";
+import { toSliderProjects } from "@/components/Slider/data";
+import { getProjects } from "@/lib/content";
 import JsonLd from "@/components/JsonLd/JsonLd";
 import {
   personId,
@@ -69,11 +72,14 @@ const structuredData = {
   ],
 };
 
-export default function Home() {
+export default async function Home() {
+  const projects = toSliderProjects(await getProjects());
+
   return (
-    <main>
+    <main style={{ position: "relative" }}>
       <JsonLd data={structuredData} />
-      <Hero />
+      <Hero introPending={projects.length > 0} />
+      {projects.length > 0 ? <Slider projects={projects} /> : null}
     </main>
   );
 }
