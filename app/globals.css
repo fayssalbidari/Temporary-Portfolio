@@ -1,11 +1,16 @@
 :root {
   /* Canvas */
   --base-screen-width: 1440;
-  /* Unités fluides du Figma (frame 1440 × 900) : gx suit la largeur, gy suit la largeur ET la
-     hauteur de la fenêtre (plein écran ou fenêtré), pour que le bloc texte + slider reste
-     centré avec des marges proportionnelles. */
+  /* Unités fluides du Figma (frame 1440 px de large). */
   --gx: calc(100vw / 1440);
-  --gy: min(calc(100vw / 1440), calc(100svh / 900));
+  /* Positions verticales : interpolation linéaire entre les deux maquettes du Figma (FS 1440×900
+     et Fenêtré 1440×726). Seuls les espaces changent avec la hauteur de la fenêtre, les tailles
+     restent liées à la largeur. */
+  --hero-top: max(calc(47.13svh - 198.2 * var(--gx)), calc(72 * var(--gx)));
+  --strip-top: max(
+    calc(76.44svh - 211 * var(--gx)),
+    calc(var(--hero-top) + 150 * var(--gx))
+  );
 
   /* Colors */
   --color-white: #ffffff;
@@ -200,19 +205,20 @@ h6 {
 }
 
 .dot-grid::before {
-  /* Valeurs du Figma (1440 × 900) : 7 rangées de points, centrées avec le bloc texte + slider. */
+  /* Valeurs du Figma (1440 px) : 7 rangées de points, fixes en haut de page. En fenêtré la
+     dernière rangée est simplement coupée par le bas de la fenêtre, comme dans la maquette. */
   content: "";
   position: absolute;
-  top: calc(50svh - 341 * var(--gy));
+  top: calc(109 * var(--gx));
   left: 0;
   width: 100%;
-  height: calc(700 * var(--gy));
+  height: calc(700 * var(--gx));
   background-image: radial-gradient(
     circle at calc(1 * var(--gx)) calc(1 * var(--gx)),
     var(--color-dot) 0 calc(1 * var(--gx)),
     transparent calc(1.4 * var(--gx))
   );
-  background-size: calc(116 * var(--gx)) calc(116 * var(--gy));
+  background-size: calc(116 * var(--gx)) calc(116 * var(--gx));
   background-position: calc(23 * var(--gx)) 0;
   pointer-events: none;
   z-index: 0;
