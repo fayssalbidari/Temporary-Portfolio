@@ -1,6 +1,11 @@
 :root {
   /* Canvas */
   --base-screen-width: 1440;
+  /* Unités fluides du Figma (frame 1440 × 900) : gx suit la largeur, gy suit la largeur ET la
+     hauteur de la fenêtre (plein écran ou fenêtré), pour que le bloc texte + slider reste
+     centré avec des marges proportionnelles. */
+  --gx: calc(100vw / 1440);
+  --gy: min(calc(100vw / 1440), calc(100svh / 900));
 
   /* Colors */
   --color-white: #ffffff;
@@ -195,21 +200,20 @@ h6 {
 }
 
 .dot-grid::before {
-  /* Tout est fluide (valeurs du Figma à 1440 px, mises à l'échelle avec la largeur). */
-  --g: calc(100vw / var(--base-screen-width));
+  /* Valeurs du Figma (1440 × 900) : 7 rangées de points, centrées avec le bloc texte + slider. */
   content: "";
   position: absolute;
-  top: calc(109 * var(--g));
+  top: calc(50svh - 341 * var(--gy));
   left: 0;
   width: 100%;
-  height: calc(700 * var(--g));
+  height: calc(700 * var(--gy));
   background-image: radial-gradient(
-    circle at calc(1 * var(--g)) calc(1 * var(--g)),
-    var(--color-dot) 0 calc(1 * var(--g)),
-    transparent calc(1.4 * var(--g))
+    circle at calc(1 * var(--gx)) calc(1 * var(--gx)),
+    var(--color-dot) 0 calc(1 * var(--gx)),
+    transparent calc(1.4 * var(--gx))
   );
-  background-size: calc(116 * var(--g)) calc(116 * var(--g));
-  background-position: calc(23 * var(--g)) 0;
+  background-size: calc(116 * var(--gx)) calc(116 * var(--gy));
+  background-position: calc(23 * var(--gx)) 0;
   pointer-events: none;
   z-index: 0;
 }
