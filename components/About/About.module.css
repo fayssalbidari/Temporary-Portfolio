@@ -1,0 +1,110 @@
+.aboutSection {
+  position: relative;
+  min-height: 100svh;
+  padding: calc(178 / var(--base-screen-width) * 100vw) var(--space-fluid)
+    calc(110 / var(--base-screen-width) * 100vw);
+}
+
+.aboutContent {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--space-fluid);
+  width: 100%;
+}
+
+.aboutLead {
+  grid-column: 2 / span 4;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.aboutImage {
+  width: calc(99 / var(--base-screen-width) * 100vw);
+  min-width: 78px;
+  max-width: 99px;
+  height: auto;
+  aspect-ratio: 99 / 138;
+  object-fit: cover;
+  display: block;
+  margin-top: calc(77 / var(--base-screen-width) * 100vw);
+}
+
+.aboutTitle {
+  max-width: calc(454 / var(--base-screen-width) * 100vw);
+}
+
+.aboutDetails {
+  grid-column: 8 / span 4;
+  display: flex;
+  flex-direction: column;
+  gap: calc(40 / var(--base-screen-width) * 100vw);
+  max-width: calc(454 / var(--base-screen-width) * 100vw);
+}
+
+.aboutBlock {
+  display: flex;
+  flex-direction: column;
+  gap: calc(10 / var(--base-screen-width) * 100vw);
+}
+
+.aboutParagraphs {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25em;
+}
+
+.aboutLabel {
+  color: var(--color-grey);
+}
+
+.aboutLink {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+
+.aboutList {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+@media (max-width: 900px) {
+  .aboutSection {
+    padding-top: 120px;
+    padding-bottom: 96px;
+  }
+
+  .aboutContent {
+    grid-template-columns: 1fr;
+    row-gap: 64px;
+  }
+
+  .aboutLead,
+  .aboutDetails {
+    grid-column: 1;
+    max-width: none;
+  }
+
+  .aboutTitle {
+    max-width: 720px;
+  }
+
+  .aboutImage {
+    margin-top: 48px;
+  }
+}
+
+@media (max-width: 520px) {
+  .aboutContent {
+    row-gap: 48px;
+  }
+
+  .aboutDetails {
+    gap: 32px;
+  }
+}
