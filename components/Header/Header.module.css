@@ -29,7 +29,3 @@
     align-items: flex-start;
     gap: calc(var(--space-fluid) / 4);
 }
-
-.navLink {
-    color: var(--color-grey);
-}

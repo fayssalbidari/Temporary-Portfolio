@@ -10,7 +10,7 @@ export default async function About() {
     await getAboutPage();
 
   return (
-    <section className={styles.aboutSection}>
+    <section className={`${styles.aboutSection} dot-grid`}>
       <div className={styles.aboutContent}>
         <div className={styles.aboutLead}>
           <h1 className={`${styles.aboutTitle} text-card-title`}>{headline}</h1>

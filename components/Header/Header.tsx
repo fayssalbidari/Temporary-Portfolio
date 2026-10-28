@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NavLink from "./NavLink";
 import styles from "./Header.module.css";
 
 export default function Header() {
@@ -14,9 +15,7 @@ export default function Header() {
         </Link>
 
         <div className={styles.navbarLinks}>
-          <Link className={`${styles.navLink} text-nav`} href="/about">
-            About
-          </Link>
+          <NavLink href="/about">About</NavLink>
         </div>
       </nav>
     </header>

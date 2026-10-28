@@ -183,3 +183,35 @@ h6 {
 .grey {
   color: var(--color-grey);
 }
+
+/* Grille de points décorative, partagée par Home et About : points 2×2 px tous les 116 px,
+   comme dans le Figma (première colonne x = 23 px, première ligne y = 109 px, 6 lignes).
+   À poser sur une section en position: relative. */
+.dot-grid {
+  position: relative;
+  overflow: hidden;
+}
+
+.dot-grid::before {
+  content: "";
+  position: absolute;
+  top: 109px;
+  left: 0;
+  width: 100%;
+  height: 584px;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--color-dot) 0 1px,
+    transparent 1.4px
+  );
+  background-size: 116px 116px;
+  background-position: 23px 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@media (max-width: 900px) {
+  .dot-grid::before {
+    display: none;
+  }
+}

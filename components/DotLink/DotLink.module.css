@@ -1,0 +1,43 @@
+.link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-grey);
+}
+
+.sm {
+  --dot-size: 4px;
+  --dot-gap: 6px;
+}
+
+.md {
+  --dot-size: 7px;
+  --dot-gap: 6px;
+}
+
+.dot {
+  flex: none;
+  width: 0;
+  height: var(--dot-size);
+  margin-right: 0;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0;
+  transition:
+    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    margin-right 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.25s ease;
+}
+
+.link:hover .dot,
+.link:focus-visible .dot,
+.link[data-active="true"] .dot {
+  width: var(--dot-size);
+  margin-right: var(--dot-gap);
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dot {
+    transition: none;
+  }
+}

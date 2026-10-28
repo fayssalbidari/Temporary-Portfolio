@@ -5,7 +5,7 @@ export default async function Hero() {
   const { heroLines, heroIntro } = await getHomePage();
 
   return (
-    <section className={styles.hero}>
+    <section className={`${styles.hero} dot-grid`}>
       <div className={styles.heroContent}>
         <div className={styles.heroRole}>
           <h1 className={`${styles.heroTitle} text-title`}>

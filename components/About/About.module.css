@@ -6,6 +6,8 @@
 }
 
 .aboutContent {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   column-gap: var(--space-fluid);

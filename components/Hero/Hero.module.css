@@ -4,32 +4,6 @@
   overflow: hidden;
 }
 
-/* Grille de points décorative : points 2×2 px tous les 116 px, comme dans le Figma
-   (première colonne x = 23 px, première ligne y = 109 px, 6 lignes). */
-.hero::before {
-  content: "";
-  position: absolute;
-  top: 109px;
-  left: 0;
-  width: 100%;
-  height: 584px;
-  background-image: radial-gradient(
-    circle at 1px 1px,
-    var(--color-dot) 0 1px,
-    transparent 1.4px
-  );
-  background-size: 116px 116px;
-  background-position: 23px 0;
-  pointer-events: none;
-  z-index: 0;
-}
-
-@media (max-width: 900px) {
-  .hero::before {
-    display: none;
-  }
-}
-
 .heroContent {
   position: absolute;
   top: calc(178 / var(--base-screen-width) * 100vw);
