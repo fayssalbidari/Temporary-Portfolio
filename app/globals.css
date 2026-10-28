@@ -195,19 +195,21 @@ h6 {
 }
 
 .dot-grid::before {
+  /* Tout est fluide (valeurs du Figma à 1440 px, mises à l'échelle avec la largeur). */
+  --g: calc(100vw / var(--base-screen-width));
   content: "";
   position: absolute;
-  top: 109px;
+  top: calc(109 * var(--g));
   left: 0;
   width: 100%;
-  height: 584px;
+  height: calc(700 * var(--g));
   background-image: radial-gradient(
-    circle at 1px 1px,
-    var(--color-dot) 0 1px,
-    transparent 1.4px
+    circle at calc(1 * var(--g)) calc(1 * var(--g)),
+    var(--color-dot) 0 calc(1 * var(--g)),
+    transparent calc(1.4 * var(--g))
   );
-  background-size: 116px 116px;
-  background-position: 23px 0;
+  background-size: calc(116 * var(--g)) calc(116 * var(--g));
+  background-position: calc(23 * var(--g)) 0;
   pointer-events: none;
   z-index: 0;
 }
