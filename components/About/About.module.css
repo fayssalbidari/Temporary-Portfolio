@@ -110,3 +110,16 @@
     gap: 32px;
   }
 }
+
+/* Masqué jusqu'à ce que SplitText ait découpé les lignes (évite un flash du texte complet). */
+.aboutSection[data-about] {
+  visibility: hidden;
+}
+
+/* Desktop : la page tient dans la fenêtre, sans défilement horizontal ni vertical. */
+@media (min-width: 901px) {
+  .aboutSection {
+    height: 100svh;
+    overflow: hidden;
+  }
+}

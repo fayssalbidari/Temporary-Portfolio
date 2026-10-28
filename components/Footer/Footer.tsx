@@ -1,4 +1,5 @@
 import { siteName, socials } from "@/lib/site";
+import DotLink from "@/components/DotLink/DotLink";
 import styles from "./Footer.module.css";
 
 export default function Footer() {
@@ -7,25 +8,15 @@ export default function Footer() {
       <div className={styles.footerContent}>
         <p className={`${styles.footerCopy} text-link`}>© 2026 {siteName}</p>
         <div className={styles.footerLinks}>
-          <a
-            className={`${styles.footerLink} text-link`}
-            href={socials.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          <DotLink href={socials.instagram} className="text-link">
             Instagram
-          </a>
-          <a
-            className={`${styles.footerLink} text-link`}
-            href={socials.linkedin}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+          </DotLink>
+          <DotLink href={socials.linkedin} className="text-link">
             Linkedin
-          </a>
-          <a className={`${styles.footerLink} text-link`} href={socials.email}>
+          </DotLink>
+          <DotLink href={socials.email} className="text-link">
             Mail
-          </a>
+          </DotLink>
         </div>
       </div>
     </footer>

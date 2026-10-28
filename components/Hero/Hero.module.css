@@ -31,6 +31,20 @@
   white-space: nowrap;
 }
 
+/* Pendant le loader, le texte reste caché jusqu'à ce qu'il soit découpé par SplitText
+   (SplitReveal.tsx le rend visible). Filet de sécurité : visible au bout de 9 s. */
+:global(html[data-intro="pending"]) .heroTitle,
+:global(html[data-intro="pending"]) .heroCopy {
+  visibility: hidden;
+  animation: heroFallback 0s linear 9s forwards;
+}
+
+@keyframes heroFallback {
+  to {
+    visibility: visible;
+  }
+}
+
 .heroCopy {
   grid-column: 8 / span 3;
   max-width: calc(335 / var(--base-screen-width) * 100vw);

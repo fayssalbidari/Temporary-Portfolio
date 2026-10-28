@@ -1,7 +1,13 @@
 .link {
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur: 0.45s;
   display: inline-flex;
   align-items: center;
   color: var(--color-grey);
+}
+
+.after {
+  flex-direction: row-reverse;
 }
 
 .sm {
@@ -14,29 +20,64 @@
   --dot-gap: 6px;
 }
 
-.dot {
+/* Emplacement du rond : sa largeur s'ouvre en même temps que le rond grandit,
+   ce qui décale le texte. */
+.slot {
   flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 0;
   height: var(--dot-size);
-  margin-right: 0;
+  transition: width var(--dur) var(--ease);
+}
+
+/* Le rond grandit depuis son centre, de 0 à sa taille. */
+.dot {
+  flex: none;
+  width: var(--dot-size);
+  height: var(--dot-size);
   border-radius: 50%;
   background: currentColor;
-  opacity: 0;
-  transition:
-    width 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    margin-right 0.35s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.25s ease;
+  transform: scale(0);
+  transform-origin: 50% 50%;
+  transition: transform var(--dur) var(--ease);
+}
+
+.link:hover .slot,
+.link:focus-visible .slot,
+.link[data-active="true"] .slot {
+  width: calc(var(--dot-size) + var(--dot-gap));
 }
 
 .link:hover .dot,
 .link:focus-visible .dot,
 .link[data-active="true"] .dot {
-  width: var(--dot-size);
-  margin-right: var(--dot-gap);
-  opacity: 1;
+  transform: scale(1);
+}
+
+/* Rond à gauche du texte : le rond est au bord gauche, l'espace (gap) est entre lui et le texte. */
+.link:not(.after) .slot {
+  justify-content: flex-start;
+}
+
+/* Rond à droite du texte : l'espace (gap) est entre le texte et le rond, qui est au bord droit. */
+.after .slot {
+  justify-content: flex-end;
+}
+
+/* Lien de la page courante : le rond est déjà là, aucun effet au survol. */
+.link[data-active="true"] {
+  cursor: default;
+}
+
+.link[data-active="true"] .slot,
+.link[data-active="true"] .dot {
+  transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .slot,
   .dot {
     transition: none;
   }

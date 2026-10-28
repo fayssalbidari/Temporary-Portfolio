@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import ChromeGate from "@/components/ChromeGate/ChromeGate";
 import Header from "@/components/Header/Header";
 import Footer from "@/components/Footer/Footer";
+import PageTransition from "@/components/PageTransition/PageTransition";
 import {
   siteDescription,
   siteName,
@@ -84,7 +85,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className={neueMontreal.variable}>
+    <html lang="fr" className={neueMontreal.variable} suppressHydrationWarning>
       <body>
         <ChromeGate>
           <Header />
@@ -93,6 +94,7 @@ export default function RootLayout({
         <ChromeGate>
           <Footer />
         </ChromeGate>
+        <PageTransition />
       </body>
     </html>
   );

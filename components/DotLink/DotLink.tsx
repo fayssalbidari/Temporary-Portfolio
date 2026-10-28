@@ -9,6 +9,8 @@ type DotLinkProps = {
   active?: boolean;
   // "sm" : point de 4 px (navigation). "md" : point de 7 px (lien « See Project »).
   size?: "sm" | "md";
+  // Côté du point par rapport au texte.
+  dotPosition?: "before" | "after";
   className?: string;
   ariaLabel?: string;
 };
@@ -20,13 +22,23 @@ export default function DotLink({
   children,
   active = false,
   size = "sm",
+  dotPosition = "before",
   className = "",
   ariaLabel,
 }: DotLinkProps) {
-  const classes = `${styles.link} ${size === "md" ? styles.md : styles.sm} ${className}`.trim();
+  const classes = [
+    styles.link,
+    size === "md" ? styles.md : styles.sm,
+    dotPosition === "after" ? styles.after : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
   const content = (
     <>
-      <span className={styles.dot} aria-hidden="true" />
+      <span className={styles.slot} aria-hidden="true">
+        <span className={styles.dot} />
+      </span>
       <span>{children}</span>
     </>
   );

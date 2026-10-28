@@ -73,18 +73,10 @@ const structuredData = {
 };
 
 export default async function Home() {
-  const projects = toSliderProjects(await getProjects());
-
+  const rawProjects = await getProjects();
+  const projects = toSliderProjects(rawProjects);
   return (
     <main style={{ position: "relative" }}>
-      {projects.length > 0 ? (
-        // Marque la Home comme « en intro » dès le premier affichage, avant même l'hydratation.
-        <script
-          dangerouslySetInnerHTML={{
-            __html: "document.documentElement.dataset.intro='pending'",
-          }}
-        />
-      ) : null}
       <JsonLd data={structuredData} />
       <Hero />
       {projects.length > 0 ? <Slider projects={projects} /> : null}

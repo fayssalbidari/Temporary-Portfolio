@@ -13,7 +13,12 @@ export default function NavLink({
 }) {
   const pathname = usePathname();
   return (
-    <DotLink href={href} active={pathname === href} className="text-nav">
+    <DotLink
+      href={href}
+      active={pathname === href}
+      dotPosition="after"
+      className="text-nav"
+    >
       {children}
     </DotLink>
   );

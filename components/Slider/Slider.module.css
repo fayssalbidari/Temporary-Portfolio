@@ -60,7 +60,7 @@
   width: 100%;
   z-index: 1002;
   text-align: center;
-  white-space: nowrap;
+  white-space: pre;
   color: #fff;
   mix-blend-mode: difference;
   font-family: var(--font-primary);
@@ -84,15 +84,7 @@
   overflow: hidden;
 }
 
-.mask {
-  display: inline-block;
-  overflow: hidden;
-  vertical-align: top;
-  padding-bottom: 0.14em;
-  margin-bottom: -0.14em;
-}
-
-.char {
+.segment {
   display: inline-block;
 }
 
@@ -102,7 +94,7 @@
   vertical-align: top;
   padding-bottom: 0.14em;
   margin-bottom: -0.14em;
-  white-space: nowrap;
+  white-space: pre;
 }
 
 .track {
@@ -132,11 +124,23 @@
   background: transparent;
   overflow: hidden;
   cursor: pointer;
-  transition: width 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+  /* Fermeture : un peu plus longue et douce que l'ouverture... */
+  transition: width 0.75s cubic-bezier(0.55, 0, 0.2, 1);
 }
 
+/* ... ouverture. */
 .strip[data-open="true"] {
   width: calc(473 * var(--u));
+  transition-duration: 0.9s;
+  transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Changer d'image dans le projet déjà ouvert : la bande qui se ferme et celle qui s'ouvre ont
+   exactement la même durée et la même courbe, donc la largeur totale reste constante et le
+   texte à droite ne bouge pas. */
+.strip[data-project-open="true"] {
+  transition-duration: 0.9s;
+  transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .strip:focus-visible {
@@ -171,13 +175,15 @@
   margin-right: 0;
   overflow: hidden;
   transition:
-    width 0.9s cubic-bezier(0.77, 0, 0.175, 1),
-    margin-right 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+    width 0.75s cubic-bezier(0.55, 0, 0.2, 1),
+    margin-right 0.75s cubic-bezier(0.55, 0, 0.2, 1);
 }
 
 .info[data-open="true"] {
   width: calc(233 * var(--u));
   margin-right: calc(10 * var(--u));
+  transition-duration: 0.9s;
+  transition-timing-function: cubic-bezier(0.77, 0, 0.175, 1);
 }
 
 .infoInner {
@@ -186,8 +192,10 @@
   justify-content: space-between;
   width: calc(233 * var(--u));
   height: 100%;
+  /* Le texte est animé par SplitText (Slider.tsx) : ici on ne fait que le cacher une fois
+     la fermeture jouée. */
   opacity: 0;
-  transition: opacity 0.25s ease;
+  transition: opacity 0s linear 0.6s;
   cursor: auto;
   user-select: text;
   -webkit-user-select: text;
@@ -195,7 +203,7 @@
 
 .info[data-open="true"] .infoInner {
   opacity: 1;
-  transition: opacity 0.5s ease 0.45s;
+  transition: none;
 }
 
 .infoTop {
@@ -226,8 +234,44 @@
 
 @media (max-width: 900px) {
   .root {
-    --u: calc(100vw / 600);
-    top: calc(50svh - 100 * var(--u));
+    --u: min(calc(100vw / 480), 1px);
+    top: calc(50svh - 90 * var(--u));
+  }
+
+  .overlay,
+  .loaderText {
+    --u: min(calc(100vw / 480), 1px);
+  }
+
+  .group {
+    position: relative;
+  }
+
+  /* L'image ouverte prend toute la largeur de l'écran (moins les marges). */
+  .strip[data-open="true"] {
+    width: calc(100vw - 2 * var(--space-fluid));
+  }
+
+  /* Le texte du projet passe sous les bandes, au lieu d'être à leur droite. */
+  .info,
+  .info[data-open="true"] {
+    position: absolute;
+    /* Aligné sous l'image ouverte : on saute les bandes qui la précèdent. */
+    left: calc(var(--before, 0) * 76 * var(--u));
+    top: calc(316 * var(--u) + 24px);
+    width: calc(100vw - 2 * var(--space-fluid));
+    max-width: 360px;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    transition: left 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+  }
+
+  .infoInner {
+    width: 100%;
+    height: auto;
+    justify-content: flex-start;
+    gap: 20px;
   }
 }
 

@@ -1,0 +1,39 @@
+/* Recouvre tout l'écran pendant la transition ; invisible et inerte le reste du temps. */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: hidden;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* Panneau noir plus haut que l'écran, aux extrémités courbes (arc d'environ 14 % de la
+   hauteur de l'écran), comme dans le « curved wipe ». Il est déplacé en JavaScript. */
+.panel {
+  position: absolute;
+  top: 0;
+  left: -10vw;
+  width: 120vw;
+  height: 160vh;
+  background: var(--color-black);
+  border-radius: 50% / 14vh;
+  will-change: transform;
+  transform: translate3d(0, 100vh, 0);
+}
+
+.label {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  transform: translateY(-50%);
+  text-align: center;
+  color: var(--color-white);
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: clamp(30px, 3.4vw, 52px);
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+}
