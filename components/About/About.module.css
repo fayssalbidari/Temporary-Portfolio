@@ -1,7 +1,7 @@
 .aboutSection {
   position: relative;
   min-height: 100svh;
-  padding: calc(178 / var(--base-screen-width) * 100vw) var(--space-fluid)
+  padding: calc(50svh - 272 * var(--gy)) var(--space-fluid)
     calc(110 / var(--base-screen-width) * 100vw);
 }
 

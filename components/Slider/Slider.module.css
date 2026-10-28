@@ -4,8 +4,9 @@
   position: absolute;
   left: 0;
   right: 0;
-  top: calc(357 * var(--u));
-  height: calc(316 * var(--u));
+  --sy: min(var(--gy), 1.35px);
+  top: calc(50svh + 27 * var(--sy));
+  height: calc(308 * var(--sy));
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
@@ -116,7 +117,7 @@
   position: relative;
   flex: none;
   width: calc(66 * var(--u));
-  height: calc(316 * var(--u));
+  height: calc(308 * var(--sy));
   margin: 0 calc(10 * var(--u)) 0 0;
   padding: 0;
   border: 0;
@@ -171,7 +172,7 @@
 .info {
   flex: none;
   width: 0;
-  height: calc(316 * var(--u));
+  height: calc(308 * var(--sy));
   margin-right: 0;
   overflow: hidden;
   transition:
@@ -235,6 +236,7 @@
 @media (max-width: 900px) {
   .root {
     --u: min(calc(100vw / 480), 1px);
+    --sy: var(--u);
     top: calc(50svh - 90 * var(--u));
   }
 
@@ -258,7 +260,7 @@
     position: absolute;
     /* Aligné sous l'image ouverte : on saute les bandes qui la précèdent. */
     left: calc(var(--before, 0) * 76 * var(--u));
-    top: calc(316 * var(--u) + 24px);
+    top: calc(308 * var(--u) + 24px);
     width: calc(100vw - 2 * var(--space-fluid));
     max-width: 360px;
     height: auto;
