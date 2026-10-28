@@ -6,7 +6,7 @@
 
 .heroContent {
   position: absolute;
-  top: calc(50svh - 224 * var(--gy));
+  top: var(--hero-top);
   left: 0;
   width: 100%;
   padding-inline: var(--space-fluid);

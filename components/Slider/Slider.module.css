@@ -4,9 +4,8 @@
   position: absolute;
   left: 0;
   right: 0;
-  --sy: min(var(--gy), 1.35px);
-  top: calc(50svh + 27 * var(--sy));
-  height: calc(308 * var(--sy));
+  top: var(--strip-top);
+  height: calc(308 * var(--u));
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
@@ -117,7 +116,7 @@
   position: relative;
   flex: none;
   width: calc(66 * var(--u));
-  height: calc(308 * var(--sy));
+  height: calc(308 * var(--u));
   margin: 0 calc(10 * var(--u)) 0 0;
   padding: 0;
   border: 0;
@@ -172,7 +171,7 @@
 .info {
   flex: none;
   width: 0;
-  height: calc(308 * var(--sy));
+  height: calc(308 * var(--u));
   margin-right: 0;
   overflow: hidden;
   transition:
@@ -236,7 +235,6 @@
 @media (max-width: 900px) {
   .root {
     --u: min(calc(100vw / 480), 1px);
-    --sy: var(--u);
     top: calc(50svh - 90 * var(--u));
   }
 
