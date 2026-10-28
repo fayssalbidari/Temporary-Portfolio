@@ -45,11 +45,34 @@ function getMetrics(
   return { starts, max: Math.max(0, total - viewportWidth) };
 }
 
+// Texte du loader découpé en caractères (split text). Les segments « crop » disparaissent
+// au step 2 pour ne laisser que « FB ».
+function Chars({ text, crop = false }: { text: string; crop?: boolean }) {
+  const chars = Array.from(text).map((char, index) => (
+    <span className={styles.mask} key={index}>
+      <span className={styles.char} data-char>
+        {char === " " ? "\u00A0" : char}
+      </span>
+    </span>
+  ));
+  return crop ? (
+    <span className={styles.crop} data-crop>
+      {chars}
+    </span>
+  ) : (
+    <>{chars}</>
+  );
+}
+
 export default function Slider({ projects }: { projects: SliderProject[] }) {
   const rootRef = useRef<HTMLElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const loaderTextRef = useRef<HTMLDivElement>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  // Le loader n'est affiché qu'à la première visite de la Home.
+  const [showLoader, setShowLoader] = useState(() => !introPlayed);
 
   const openRef = useRef<string | null>(null);
   const scroll = useRef({ target: 0, current: 0, max: 0, moved: 0, dragging: false });
@@ -117,17 +140,18 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       root.dataset.mode = "dom";
       root.dataset.intro = "done";
       html.dataset.intro = "done";
+      introPlayed = true;
       measure();
+      window.setTimeout(() => setShowLoader(false), 0);
     }
 
     const s = scroll.current;
-    const state = { appear: 1, spread: 1, shear: 0, bend: 0 };
+    // Le slider reste droit, comme dans le Figma : pas de courbure ni d'inclinaison.
+    const state = { appear: 1, expand: 1, fly: 1, unit: getUnit(window.innerWidth), shear: 0, bend: 0 };
     let raf = 0;
     let last = performance.now();
     let timeline: gsap.core.Timeline | null = null;
     let cancelled = false;
-
-    const bendFor = () => (reduced ? 0 : clamp(window.innerHeight * 0.055, 18, 70));
 
     const onWheel = (event: WheelEvent) => {
       if (root.dataset.intro !== "done") {
@@ -191,7 +215,7 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
 
     const onResize = () => {
       gl?.resize(window.innerWidth, window.innerHeight);
-      state.bend = state.bend === 0 ? 0 : bendFor();
+      state.unit = getUnit(window.innerWidth);
       measure();
     };
 
@@ -200,14 +224,9 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       last = now;
 
       const ease = 1 - Math.pow(1 - (s.dragging ? 0.35 : 0.085), dt * 60);
-      const previous = s.current;
       s.current += (s.target - s.current) * ease;
       if (Math.abs(s.target - s.current) < 0.05) s.current = s.target;
       track.style.transform = `translate3d(${s.current}px,0,0)`;
-
-      const velocity = (s.current - previous) / Math.max(dt, 0.001);
-      const targetShear = reduced ? 0 : clamp(velocity / 9000, -0.22, 0.22);
-      state.shear += (targetShear - state.shear) * 0.12;
 
       gl?.render(state);
       raf = requestAnimationFrame(tick);
@@ -217,34 +236,91 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       introPlayed = true;
       root.dataset.intro = "done";
       html.dataset.intro = "done";
+      setShowLoader(false);
     };
 
     if (gl) {
       root.dataset.mode = "gl";
       measure();
-      state.bend = bendFor();
 
       const skipIntro = reduced || introPlayed;
       if (skipIntro) {
         finishIntro();
       } else {
         root.dataset.intro = "running";
+        html.dataset.intro = "pending";
         state.appear = 0;
-        state.spread = 0;
+        state.expand = 0;
+        state.fly = 0;
 
-        // On attend les images (2,5 s maximum) pour que l'intro ne démarre pas à vide.
+        // On attend les images et la police (2,5 s maximum) pour que l'intro ne démarre pas à vide.
         const images = strips.map((el) => el.querySelector("img") as HTMLImageElement);
-        const loaded = Promise.all(images.map((img) => img.decode().catch(() => undefined)));
+        const loaded = Promise.all([
+          document.fonts.ready,
+          ...images.map((img) => img.decode().catch(() => undefined)),
+        ]);
         const timeout = new Promise((resolve) => window.setTimeout(resolve, 2500));
         Promise.race([loaded, timeout]).then(() => {
-          if (cancelled) return;
+          const text = loaderTextRef.current;
+          const overlay = overlayRef.current;
+          if (cancelled || !text || !overlay || !gl) {
+            if (!cancelled) finishIntro();
+            return;
+          }
+
+          gl.prepareIntro();
+
+          const chars = text.querySelectorAll("[data-char]");
+          const crops = text.querySelectorAll<HTMLElement>("[data-crop]");
+          const line1 = text.querySelector("[data-line1]") as HTMLElement;
+          const line2 = text.querySelector("[data-line2]") as HTMLElement;
+
+          // État de départ : lettres cachées derrière leur masque, largeur des segments figée.
+          gsap.set(chars, { yPercent: 115 });
+          gsap.set(crops, { width: (_index, el: HTMLElement) => el.offsetWidth });
+          gsap.set(text, { opacity: 1 });
+
+          // « FB » rejoint le logo de la nav en changeant d'échelle.
+          const logo = document.querySelector("[data-logo]");
+          const toLogo = () => {
+            const from = line1.getBoundingClientRect();
+            const to = (logo ?? line1).getBoundingClientRect();
+            const logoSize = logo ? parseFloat(getComputedStyle(logo).fontSize) : 0;
+            const textSize = parseFloat(getComputedStyle(text).fontSize);
+            return {
+              x: to.left + to.width / 2 - (from.left + from.width / 2),
+              y: to.top + to.height / 2 - (from.top + from.height / 2),
+              scale: logoSize && textSize ? logoSize / textSize : 1,
+            };
+          };
+          let target = { x: 0, y: 0, scale: 1 };
+
           timeline = gsap
             .timeline({ onComplete: finishIntro })
-            .to(state, { appear: 1, duration: 1.1, ease: "power3.out" })
-            .to(state, { spread: 1, duration: 2, ease: "none" }, "+=0.35")
+            // Step 1 : le texte apparaît lettre par lettre, la pile de cartes se pose.
+            .to(chars, { yPercent: 0, duration: 0.9, ease: "power4.out", stagger: 0.03 }, 0.1)
+            .to(state, { appear: 1, duration: 0.8, ease: "power2.out" }, 0.35)
+            // Step 2 : le texte se coupe pour ne laisser que « FB », la pile s'ouvre en cercle.
+            .to(crops, { width: 0, duration: 0.9, ease: "power4.inOut" }, 1.7)
+            .to(line2, { height: 0, duration: 0.8, ease: "power4.inOut" }, 1.7)
+            .to(state, { expand: 1, duration: 1.4, ease: "none" }, 1.7)
+            // Vers la Home : les cartes se rangent dans le slider, « FB » monte dans la nav.
             .call(() => {
-              html.dataset.intro = "done";
-            }, [], "-=0.7");
+              target = toLogo();
+            }, [], 3.5)
+            .to(overlay, { opacity: 0, duration: 0.5, ease: "power1.out" }, 3.55)
+            .to(state, { fly: 1, duration: 1.7, ease: "none" }, 3.5)
+            .to(
+              text,
+              {
+                x: () => target.x,
+                y: () => target.y,
+                scale: () => target.scale,
+                duration: 1.5,
+                ease: "power3.inOut",
+              },
+              3.55,
+            );
         });
       }
 
@@ -280,6 +356,25 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
   };
 
   return (
+    <>
+    {showLoader ? (
+      <>
+        <div ref={overlayRef} className={styles.overlay} aria-hidden="true">
+          <div className="dot-grid" style={{ position: "absolute", inset: 0 }} />
+        </div>
+        <div ref={loaderTextRef} className={styles.loaderText} aria-hidden="true">
+          <div className={styles.loaderLine} data-line1>
+            <Chars text="F" />
+            <Chars text="ayssal " crop />
+            <Chars text="B" />
+            <Chars text="idari" crop />
+          </div>
+          <div className={styles.loaderLine2} data-line2>
+            <Chars text="Portfolio" />
+          </div>
+        </div>
+      </>
+    ) : null}
     <section
       ref={rootRef}
       className={styles.root}
@@ -351,5 +446,6 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
         })}
       </div>
     </section>
+    </>
   );
 }

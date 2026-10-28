@@ -77,8 +77,16 @@ export default async function Home() {
 
   return (
     <main style={{ position: "relative" }}>
+      {projects.length > 0 ? (
+        // Marque la Home comme « en intro » dès le premier affichage, avant même l'hydratation.
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.dataset.intro='pending'",
+          }}
+        />
+      ) : null}
       <JsonLd data={structuredData} />
-      <Hero introPending={projects.length > 0} />
+      <Hero />
       {projects.length > 0 ? <Slider projects={projects} /> : null}
     </main>
   );

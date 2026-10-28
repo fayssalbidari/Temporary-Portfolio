@@ -222,15 +222,17 @@ h6 {
   display: none !important;
 }
 
-/* Le texte du hero apparaît une fois l'intro du slider terminée (voir Slider.tsx).
-   Filet de sécurité : s'il y a un souci, il s'affiche quand même au bout de 4 s. */
+/* Pendant le loader de la Home (voir Slider.tsx), le texte du hero, la nav et le footer
+   restent cachés, et le logo FB n'apparaît qu'à l'arrivée du « FB » animé.
+   Filet de sécurité : au bout de 9 s tout s'affiche, quoi qu'il arrive. */
 [data-intro-gate] {
   transition: opacity 0.9s ease;
 }
 
-html:not([data-intro="done"]) [data-intro-gate] {
+html[data-intro="pending"] [data-intro-gate],
+html[data-intro="pending"] [data-logo] {
   opacity: 0;
-  animation: intro-gate-fallback 0s linear 4s forwards;
+  animation: intro-gate-fallback 0s linear 9s forwards;
 }
 
 @keyframes intro-gate-fallback {

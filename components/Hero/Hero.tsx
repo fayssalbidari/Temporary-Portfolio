@@ -1,12 +1,12 @@
 import { getHomePage } from "@/lib/content";
 import styles from "./Hero.module.css";
 
-export default async function Hero({ introPending = false }: { introPending?: boolean }) {
+export default async function Hero() {
   const { heroLines, heroIntro } = await getHomePage();
 
   return (
     <section className={`${styles.hero} dot-grid`}>
-      <div className={styles.heroContent} data-intro-gate={introPending ? "" : undefined}>
+      <div className={styles.heroContent} data-intro-gate>
         <div className={styles.heroRole}>
           <h1 className={`${styles.heroTitle} text-title`}>
             {heroLines.map((line, index) => (

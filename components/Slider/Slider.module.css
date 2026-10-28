@@ -6,7 +6,6 @@
   right: 0;
   top: calc(357 * var(--u));
   height: calc(316 * var(--u));
-  z-index: 3;
   cursor: grab;
   touch-action: pan-y;
   user-select: none;
@@ -22,11 +21,88 @@
   pointer-events: none;
 }
 
+/* Le canvas passe au-dessus du loader (blanc) pour que les cartes s'y voient. */
 .canvas {
   position: fixed;
   top: 0;
   left: 0;
+  z-index: 1001;
   pointer-events: none;
+}
+
+/* --- Loader ------------------------------------------------------------------------- */
+.overlay,
+.loaderText {
+  --u: min(calc(100vw / 1440), 1.35px);
+}
+
+/* Filet de sécurité : si le JavaScript ne démarre pas, le loader disparaît au bout de 9 s. */
+@keyframes loaderFallback {
+  to {
+    visibility: hidden;
+  }
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: var(--color-white);
+  pointer-events: none;
+  animation: loaderFallback 0s linear 9s forwards;
+}
+
+/* Texte centré, blanc en mode « difference » : noir sur fond blanc, inversé sur les cartes. */
+.loaderText {
+  position: fixed;
+  top: calc(50% - 48 * var(--u));
+  left: 0;
+  width: 100%;
+  z-index: 1002;
+  text-align: center;
+  white-space: nowrap;
+  color: #fff;
+  mix-blend-mode: difference;
+  font-family: var(--font-primary);
+  font-weight: 400;
+  font-size: calc(48 * var(--u));
+  line-height: 1;
+  letter-spacing: -0.025em;
+  transform-origin: 50% calc(24 * var(--u));
+  opacity: 0;
+  pointer-events: none;
+  animation: loaderFallback 0s linear 9s forwards;
+}
+
+.loaderLine,
+.loaderLine2 {
+  display: block;
+  height: calc(48 * var(--u));
+}
+
+.loaderLine2 {
+  overflow: hidden;
+}
+
+.mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+
+.char {
+  display: inline-block;
+}
+
+.crop {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+  white-space: nowrap;
 }
 
 .track {

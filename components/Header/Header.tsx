@@ -9,12 +9,13 @@ export default function Header() {
         <Link
           className={`${styles.logo} text-logo`}
           href="/"
+          data-logo
           aria-label="Fayssal Bidari, accueil"
         >
           FB
         </Link>
 
-        <div className={styles.navbarLinks}>
+        <div className={styles.navbarLinks} data-intro-gate>
           <NavLink href="/about">About</NavLink>
         </div>
       </nav>
