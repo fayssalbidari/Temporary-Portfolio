@@ -218,14 +218,21 @@ export class SliderGL {
   private width = 0;
   private height = 0;
   private destroyed = false;
+  // Envoi des textures au GPU, étalé sur plusieurs images : tout envoyer d'un coup fige la page.
+  private uploadQueue: Array<{ entry: Entry; run: () => void }> = [];
+  private frame = 0;
+  private mobile = false;
 
   constructor(canvas: HTMLCanvasElement, items: GLItem[]) {
+    // Sur mobile, un canvas plein écran en haute densité coûte cher : on limite la définition
+    // et on coupe l'antialiasing (inutile à cette densité) pour garder 60 images par seconde.
+    this.mobile = window.matchMedia("(max-width: 900px)").matches;
     this.renderer = new Renderer({
       canvas,
       alpha: true,
       premultipliedAlpha: true,
-      antialias: true,
-      dpr: Math.min(window.devicePixelRatio || 1, 2),
+      antialias: !this.mobile,
+      dpr: Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2),
     });
     this.gl = this.renderer.gl;
     this.gl.clearColor(0, 0, 0, 0);
@@ -283,9 +290,21 @@ export class SliderGL {
 
       const upload = () => {
         if (this.destroyed || !item.img.naturalWidth) return;
-        texture.image = item.img;
-        program.uniforms.uImage.value = [item.img.naturalWidth, item.img.naturalHeight];
-        entry.ready = true;
+        // On décode l'image avant de l'envoyer au GPU : sinon Safari la décode au moment de
+        // l'envoi, sur le thread principal, et la page fige.
+        const decoded = item.img.decode ? item.img.decode().catch(() => undefined) : Promise.resolve();
+        void decoded.then(() => {
+          if (this.destroyed || !item.img.naturalWidth) return;
+          this.uploadQueue.push({
+            entry,
+            run: () => {
+              if (this.destroyed || !item.img.naturalWidth) return;
+              texture.image = item.img;
+              program.uniforms.uImage.value = [item.img.naturalWidth, item.img.naturalHeight];
+              entry.ready = true;
+            },
+          });
+        });
       };
       if (item.img.complete && item.img.naturalWidth) upload();
       else item.img.addEventListener("load", upload, { once: true });
@@ -332,6 +351,26 @@ export class SliderGL {
   }
 
   render(state: FrameState) {
+    // Une texture par image au maximum (une image sur deux sur mobile), pour ne jamais bloquer le
+    // thread principal. On envoie d'abord celles qui sont le plus près du centre de l'écran.
+    this.frame++;
+    if (this.uploadQueue.length > 0 && (!this.mobile || this.frame % 2 === 0)) {
+      const queue = this.uploadQueue;
+      let pick = 0;
+      if (queue.length > 1) {
+        const mid = window.innerWidth / 2;
+        let best = Infinity;
+        for (let i = 0; i < queue.length; i++) {
+          const rect = queue[i].entry.item.el.getBoundingClientRect();
+          const distance = Math.abs(rect.left + rect.width / 2 - mid);
+          if (distance < best) {
+            best = distance;
+            pick = i;
+          }
+        }
+      }
+      queue.splice(pick, 1)[0].run();
+    }
     if (this.destroyed) return;
     const { width: W, height: H } = this;
     const cx = W / 2;

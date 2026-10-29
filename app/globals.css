@@ -262,6 +262,16 @@ html[data-intro="reveal"] [data-logo] {
 
 /* Mobile : la Home tient dans l'écran (hero + slider + footer), sans défilement vertical. */
 @media (max-width: 900px) {
+  /* Aucun défilement : la page ne bouge plus, la barre de Safari reste en place et le canvas
+     du slider garde toujours la même taille. */
+  html:has([data-home]),
+  html:has([data-home]) body {
+    overflow: hidden;
+    height: 100svh;
+    min-height: 0;
+    overscroll-behavior: none;
+  }
+
   main[data-home] {
     display: flex;
     flex-direction: column;

@@ -7,7 +7,7 @@
   top: var(--strip-top);
   height: calc(308 * var(--u));
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: none;
   user-select: none;
   -webkit-user-select: none;
 }

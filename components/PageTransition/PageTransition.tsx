@@ -67,34 +67,37 @@ export default function PageTransition() {
     const play = async (target: string) => {
       busy.current = true;
       html.dataset.transition = "running";
-      const vh = window.innerHeight;
+      // Hauteur réelle de la zone visible (sur mobile, la barre de Safari change window.innerHeight
+      // et les unités vh) : le panneau est dimensionné en pixels à partir d'elle.
+      const vh = overlay.getBoundingClientRect().height || window.innerHeight;
+      const panelHeight = vh * 1.6;
 
       label.textContent = labelFor(target);
       const split = SplitText.create(label, { type: "chars", mask: "chars", aria: "none" });
       gsap.set(split.chars, { yPercent: 115 });
       gsap.set(overlay, { autoAlpha: 1, pointerEvents: "auto" });
-      gsap.set(panel, { y: vh });
+      gsap.set(panel, { y: vh, height: panelHeight, borderRadius: `50% / ${vh * 0.14}px` });
 
       // 1. Le panneau monte et recouvre la page ; la navigation démarre pendant ce temps.
       await new Promise<void>((resolve) => {
         gsap
           .timeline({ onComplete: resolve })
-          .to(panel, { y: -0.3 * vh, duration: 0.85, ease: "power3.inOut" }, 0)
-          .call(() => router.push(target), [], 0.4)
-          .to(split.chars, { yPercent: 0, duration: 0.7, ease: "expo.out", stagger: 0.03 }, 0.5);
+          .to(panel, { y: -0.3 * vh, duration: 0.65, ease: "power3.inOut" }, 0)
+          .call(() => router.push(target), [], 0.3)
+          .to(split.chars, { yPercent: 0, duration: 0.55, ease: "expo.out", stagger: 0.025 }, 0.4);
       });
 
       // 2. On attend que la nouvelle page soit prête, puis le nom reste un instant.
       await waitForPath(target);
-      await new Promise((resolve) => window.setTimeout(resolve, 200));
+      await new Promise((resolve) => window.setTimeout(resolve, 100));
 
       // 3. Le nom repart, le panneau sort par le haut et révèle la nouvelle page.
       await new Promise<void>((resolve) => {
         gsap
           .timeline({ onComplete: resolve })
-          .to(split.chars, { yPercent: -115, duration: 0.5, ease: "power3.in", stagger: 0.02 }, 0)
-          .call(() => window.dispatchEvent(new Event("page:reveal")), [], 0.35)
-          .to(panel, { y: -1.65 * vh, duration: 1.05, ease: "power3.inOut" }, 0.3);
+          .to(split.chars, { yPercent: -115, duration: 0.4, ease: "power3.in", stagger: 0.015 }, 0)
+          .call(() => window.dispatchEvent(new Event("page:reveal")), [], 0.25)
+          .to(panel, { y: -(panelHeight + 0.1 * vh), duration: 0.8, ease: "power3.inOut" }, 0.2);
       });
 
       split.revert();
