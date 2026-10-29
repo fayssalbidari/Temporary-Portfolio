@@ -92,6 +92,10 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
   // Le loader n'est affiché qu'à la première visite de la Home.
   const [showLoader, setShowLoader] = useState(() => !introPlayed);
 
+  const projectsRef = useRef(projects);
+  useEffect(() => {
+    projectsRef.current = projects;
+  }, [projects]);
   const openRef = useRef<string | null>(null);
   const pulseRef = useRef<((id: string, sign: number, close?: boolean) => void) | null>(null);
   const scroll = useRef({
@@ -353,6 +357,7 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
     let startX = 0;
     let lastX = 0;
     let dragVelocity = 0;
+    let swipeHandled = false;
 
     const onPointerDown = (event: PointerEvent) => {
       if (root.dataset.intro !== "done" || (event.pointerType === "mouse" && event.button !== 0)) {
@@ -362,6 +367,7 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       pointerId = event.pointerId;
       startX = lastX = event.clientX;
       dragVelocity = 0;
+      swipeHandled = false;
       s.moved = 0;
     };
 
@@ -370,6 +376,32 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       const dx = event.clientX - lastX;
       lastX = event.clientX;
       s.moved = Math.max(s.moved, Math.abs(event.clientX - startX));
+
+      // Mobile, image ouverte : un glissé passe à l'image voisine du même projet (vers l'avant ou
+      // vers l'arrière) au lieu de refermer. Aux extrémités du projet, il referme l'image.
+      const openNow = openRef.current;
+      if (openNow && window.innerWidth <= 900 && !s.dragging) {
+        if (swipeHandled) return;
+        const travelled = event.clientX - startX;
+        if (Math.abs(travelled) > 28) {
+          swipeHandled = true;
+          const [projectPart, imagePart] = openNow.split(":");
+          const count = projectsRef.current[Number(projectPart)]?.images.length ?? 0;
+          const next = Number(imagePart) + (travelled < 0 ? 1 : -1);
+          s.lastInput = performance.now();
+          if (next >= 0 && next < count) {
+            const nextId = `${projectPart}:${next}`;
+            pulseRef.current?.(nextId, -1);
+            pulseRef.current?.(openNow, 1, false);
+            setOpenId(nextId);
+          } else {
+            pulseRef.current?.(openNow, 1, true);
+            setOpenId(null);
+          }
+        }
+        return;
+      }
+
       if (s.moved > 6) {
         s.dragging = true;
         root.dataset.dragging = "true";
