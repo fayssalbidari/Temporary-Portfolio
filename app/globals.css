@@ -230,12 +230,6 @@ h6 {
   }
 }
 
-/* TEMPORAIRE : masque le badge « Powered by Netlify » injecté par Netlify pendant la phase de test.
-   À supprimer ce bloc quand le site sera hébergé ailleurs ou sur un plan sans badge. */
-.nl-wrap {
-  display: none !important;
-}
-
 /* Pendant le loader de la Home (voir Slider.tsx) :
    - « pending » : le texte du hero, la nav et le footer restent cachés, ainsi que le logo FB ;
    - « reveal »  : la page apparaît (le logo reste caché, « FB » est en route vers lui) ;
@@ -258,7 +252,7 @@ html[data-intro="reveal"] [data-logo] {
   }
 }
 
-@media (min-width: 901px) {
+@media (min-width: 901px) and (min-height: 700px) {
   html:has([data-about]),
   html:has([data-about]) body {
     overflow: hidden;

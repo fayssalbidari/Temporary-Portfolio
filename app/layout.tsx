@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     description: siteDescription,
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: siteTitle,
     description: siteDescription,
   },
@@ -86,6 +86,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr" className={neueMontreal.variable} suppressHydrationWarning>
+      <head>
+        {/* Marque la Home comme « en intro » avant l'hydratation (le layout n'est rendu qu'une fois côté serveur). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "if(location.pathname==='/')document.documentElement.dataset.intro='pending'",
+          }}
+        />
+      </head>
       <body>
         <ChromeGate>
           <Header />

@@ -116,8 +116,9 @@
   visibility: hidden;
 }
 
-/* Desktop : la page tient dans la fenêtre, sans défilement horizontal ni vertical. */
-@media (min-width: 901px) {
+/* Desktop : la page tient dans la fenêtre, sans défilement horizontal ni vertical. En dessous de
+   700 px de haut (petite fenêtre, tablette paysage), la page redevient défilable. */
+@media (min-width: 901px) and (min-height: 700px) {
   .aboutSection {
     height: 100svh;
     overflow: hidden;

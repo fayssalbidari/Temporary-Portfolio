@@ -10,6 +10,23 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/about",
   },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    url: `${siteUrl}/about`,
+    siteName,
+    title: `About - ${siteName}`,
+    description:
+      "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, web developer et motion designer. Formé à l'HEAJ à Namur puis aux Gobelins, en recherche d'alternance 2026-2027.",
+    images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `About - ${siteName}`,
+    description:
+      "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, web developer et motion designer. Formé à l'HEAJ à Namur puis aux Gobelins, en recherche d'alternance 2026-2027.",
+    images: ["/twitter-image.png"],
+  },
 };
 
 const aboutJsonLd = {
