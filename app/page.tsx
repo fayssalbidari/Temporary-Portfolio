@@ -76,7 +76,7 @@ export default async function Home() {
   const rawProjects = await getProjects();
   const projects = toSliderProjects(rawProjects);
   return (
-    <main style={{ position: "relative" }}>
+    <main data-home style={{ position: "relative" }}>
       <JsonLd data={structuredData} />
       <Hero />
       {projects.length > 0 ? <Slider projects={projects} /> : null}

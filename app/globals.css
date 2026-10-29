@@ -265,3 +265,24 @@ html[data-intro="reveal"] [data-logo] {
     height: 100%;
   }
 }
+
+/* Mobile : la Home tient dans l'écran (hero + slider + footer), sans défilement vertical. */
+@media (max-width: 900px) {
+  main[data-home] {
+    display: flex;
+    flex-direction: column;
+    height: 100svh;
+    padding-bottom: 54px;
+    overflow: hidden;
+  }
+
+  /* À l'ouverture d'un projet, son texte prend la place du texte du hero. */
+  [data-hero-content] {
+    transition: opacity 0.5s ease 0.4s;
+  }
+
+  main[data-home]:has([data-open-any="true"]) [data-hero-content] {
+    opacity: 0;
+    transition-delay: 0s;
+  }
+}

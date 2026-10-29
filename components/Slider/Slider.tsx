@@ -27,7 +27,7 @@ const openEase = gsap.parseEase("power4.inOut");
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 
 function getUnit(viewportWidth: number) {
-  return viewportWidth <= 900 ? Math.min(viewportWidth / 480, 1) : Math.min(viewportWidth / 1440, 1.35);
+  return viewportWidth <= 900 ? Math.min(viewportWidth / 393, 1.2) : Math.min(viewportWidth / 1440, 1.35);
 }
 
 // Calcule la position de chaque projet dans la piste, ouverture comprise (valeurs finales).
@@ -411,9 +411,21 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       else if (event.key === "Escape") setOpenId(null);
     };
 
+    // Mobile : distance entre le haut du texte du hero et le haut du slider. Le texte d'un projet
+    // ouvert prend cette place (voir Slider.module.css).
+    const updateHeroOffset = () => {
+      const heroTitle = document.querySelector("[data-hero-content] h1");
+      if (!heroTitle) return;
+      const offset = root.getBoundingClientRect().top - heroTitle.getBoundingClientRect().top;
+      root.style.setProperty("--hero-offset", `${Math.max(0, offset)}px`);
+    };
+    updateHeroOffset();
+    document.fonts.ready.then(updateHeroOffset);
+
     const onResize = () => {
       gl?.resize(window.innerWidth, window.innerHeight);
       state.unit = getUnit(window.innerWidth);
+      updateHeroOffset();
       measure();
     };
 
@@ -723,6 +735,7 @@ export default function Slider({ projects }: { projects: SliderProject[] }) {
       data-mode="pending"
       data-intro="idle"
       aria-label="Projets"
+      data-open-any={openId !== null}
     >
       <canvas ref={canvasRef} className={styles.canvas} aria-hidden="true" />
 

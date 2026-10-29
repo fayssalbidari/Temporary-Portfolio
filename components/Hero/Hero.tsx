@@ -7,7 +7,7 @@ export default async function Hero() {
 
   return (
     <section className={`${styles.hero} dot-grid`}>
-      <div className={styles.heroContent}>
+      <div className={styles.heroContent} data-hero-content>
         <div className={styles.heroRole}>
           <SplitReveal as="h1" className={`${styles.heroTitle} text-title`} stagger={0.1}>
             {heroLines.map((line, index) => (
