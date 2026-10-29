@@ -224,15 +224,13 @@ export class SliderGL {
   private mobile = false;
 
   constructor(canvas: HTMLCanvasElement, items: GLItem[]) {
-    // Sur mobile, un canvas plein écran en haute densité coûte cher : on limite la définition
-    // et on coupe l'antialiasing (inutile à cette densité) pour garder 60 images par seconde.
     this.mobile = window.matchMedia("(max-width: 900px)").matches;
     this.renderer = new Renderer({
       canvas,
       alpha: true,
       premultipliedAlpha: true,
-      antialias: !this.mobile,
-      dpr: Math.min(window.devicePixelRatio || 1, this.mobile ? 1.5 : 2),
+      antialias: true,
+      dpr: Math.min(window.devicePixelRatio || 1, 2),
     });
     this.gl = this.renderer.gl;
     this.gl.clearColor(0, 0, 0, 0);

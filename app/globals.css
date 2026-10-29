@@ -272,10 +272,13 @@ html[data-intro="reveal"] [data-logo] {
     overscroll-behavior: none;
   }
 
+  /* La Home occupe exactement la zone visible (même quand les barres du navigateur changent),
+     sans dépendre des unités svh/vh que Safari et Chrome iOS calculent différemment. */
   main[data-home] {
+    position: fixed !important;
+    inset: 0;
     display: flex;
     flex-direction: column;
-    height: 100svh;
     padding-bottom: 54px;
     overflow: hidden;
   }

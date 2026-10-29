@@ -76,13 +76,15 @@ export default function PageTransition() {
       const split = SplitText.create(label, { type: "chars", mask: "chars", aria: "none" });
       gsap.set(split.chars, { yPercent: 115 });
       gsap.set(overlay, { autoAlpha: 1, pointerEvents: "auto" });
-      gsap.set(panel, { y: vh, height: panelHeight, borderRadius: `50% / ${vh * 0.14}px` });
+      // Le rayon des coins est posé directement en CSS : GSAP déforme la notation « 50% / 98px ».
+      panel.style.borderRadius = `50% / ${vh * 0.14}px`;
+      gsap.set(panel, { y: vh, height: panelHeight });
 
       // 1. Le panneau monte et recouvre la page ; la navigation démarre pendant ce temps.
       await new Promise<void>((resolve) => {
         gsap
           .timeline({ onComplete: resolve })
-          .to(panel, { y: -0.3 * vh, duration: 0.65, ease: "power3.inOut" }, 0)
+          .to(panel, { y: -0.34 * vh, duration: 0.65, ease: "power3.inOut" }, 0)
           .call(() => router.push(target), [], 0.3)
           .to(split.chars, { yPercent: 0, duration: 0.55, ease: "expo.out", stagger: 0.025 }, 0.4);
       });
