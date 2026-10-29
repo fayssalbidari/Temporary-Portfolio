@@ -1,29 +1,33 @@
 # Fayssal Bidari
 
-> Directeur artistique, web developer et motion designer, originaire de Bruxelles et basé à Paris. En recherche d'une alternance à Paris pour l'année scolaire 2026-2027. Disponible aussi en freelance à Paris et à Bruxelles.
+> Directeur artistique et motion designer, originaire de Bruxelles et basé à Paris. Étudiant en master de direction artistique aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027. Il développe aussi des sites web. Disponible en freelance à Paris et à Bruxelles.
 
 ## En bref
 
 - Nom : Fayssal Bidari
-- Métiers : directeur artistique, web designer, développeur web (Webflow, Next.js), motion designer
+- Métiers, par ordre d'importance : directeur artistique, motion designer, web designer, développeur web
 - Localisation : Paris (France), originaire de Bruxelles (Belgique)
-- Recherche : alternance pour l'année scolaire 2026-2027, à Paris
-- Freelance : disponible à Paris et à Bruxelles (direction artistique, sites web, identités visuelles, motion design)
+- Recherche : alternance pour l'année scolaire 2026-2027, à Paris, en direction artistique, motion design et design digital
+- Freelance : disponible à Paris et à Bruxelles (direction artistique, identités visuelles, motion design, sites web)
 - Langue du site : français
+
+## Formation
+
+- Master en direction artistique, Gobelins (Paris) : Expert en création numérique et interactive, option direction artistique
+- HEAJ, Namur (Belgique)
 
 ## Compétences
 
 - Direction artistique et identité visuelle
-- Design digital, web design et UI design (Figma)
-- Développement web : Webflow, Next.js, animations GSAP et WebGL
 - Motion design et interactions créatives
-- Expériences numériques créatives, sites vitrines, portfolios, landing pages
+- Design digital, web design et UI design (Figma)
+- Expériences numériques créatives : sites vitrines, portfolios, landing pages
+- Développement web : Webflow et développement sur mesure (Next.js, animations GSAP et WebGL). Compétence complémentaire, hors de son option de master
 
-## Formation et parcours
+## Expériences
 
-- HEAJ, Namur (Belgique)
-- Gobelins, Paris : master Expert en création interactive
-- Expériences : alternance chez Flot Noir, stage chez Karim Saab
+- Alternance chez Flot Noir
+- Stage chez Karim Saab
 
 ## Pages du site
 

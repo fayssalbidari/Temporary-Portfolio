@@ -7,11 +7,11 @@ export const siteTitle =
 
 // Courte (≈150 caractères) : pour la balise meta description et les aperçus.
 export const siteDescription =
-  "Directeur artistique, web developer et motion designer. En recherche d'une alternance à Paris pour l'année scolaire 2026-2027 : design digital, Webflow, motion.";
+  "Directeur artistique, motion designer et web developer. En recherche d'une alternance à Paris pour l'année scolaire 2026-2027 : direction artistique, motion design, design digital.";
 
 // Longue : pour les données structurées (JSON-LD), lues par les moteurs et les IA.
 export const siteLongDescription =
-  "Fayssal Bidari est directeur artistique, web developer et motion designer, originaire de Bruxelles et basé à Paris. Étudiant aux Gobelins, il est en recherche d'une alternance à Paris pour l'année scolaire 2026-2027 (direction artistique, design digital, web design, développement web et Webflow, motion design, identité visuelle). Il conçoit des expériences numériques créatives et des identités sur mesure, et reste disponible en freelance à Paris et à Bruxelles.";
+  "Fayssal Bidari est directeur artistique et motion designer, originaire de Bruxelles et basé à Paris. Il prépare un master en direction artistique (Expert en création numérique et interactive) aux Gobelins et cherche une alternance à Paris pour l'année scolaire 2026-2027 : direction artistique, motion design, design digital, identité visuelle. Il développe aussi des sites web. Il conçoit des expériences numériques créatives et des identités sur mesure, et reste disponible en freelance à Paris et à Bruxelles.";
 
 export const socials = {
   instagram: "https://www.instagram.com/fayssal_design/",

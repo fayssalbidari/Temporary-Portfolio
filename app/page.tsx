@@ -21,23 +21,22 @@ const structuredData = {
       url: siteUrl,
       jobTitle: [
         "Directeur Artistique",
-        "Développeur web",
         "Motion Designer",
+        "Web designer",
+        "Développeur web",
         "Freelance Designer",
       ],
       knowsAbout: [
         "Direction artistique",
+        "Motion design",
+        "Identité visuelle",
         "Design digital",
         "Web design",
         "UI design",
         "Figma",
-        "Développement web",
-        "Webflow",
-        "Next.js",
-        "Motion design",
-        "GSAP",
-        "Identité visuelle",
         "Expérience numérique",
+        "Création numérique interactive",
+        "Développement web",
       ],
       address: {
         "@type": "PostalAddress",
@@ -54,7 +53,7 @@ const structuredData = {
     {
       "@type": "ProfessionalService",
       "@id": `${siteUrl}/#service`,
-      name: `${siteName} - Freelance Designer, Développeur & Motion Designer`,
+      name: `${siteName} - Freelance Directeur Artistique, Motion Designer & Développeur web`,
       url: siteUrl,
       founder: { "@id": personId },
       areaServed: [
@@ -65,13 +64,13 @@ const structuredData = {
       ],
       serviceType: [
         "Direction artistique",
-        "Design digital",
-        "Développement web",
         "Motion design",
         "Identité visuelle",
+        "Design digital",
+        "Développement web",
       ],
       description:
-        "Services freelance en direction artistique, design digital, développement web et motion design pour des marques basées à Paris, Bruxelles, en France et en Belgique.",
+        "Services freelance en direction artistique, motion design, design digital et développement web pour des marques basées à Paris, Bruxelles, en France et en Belgique.",
     },
   ],
 };

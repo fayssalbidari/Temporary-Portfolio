@@ -6,7 +6,7 @@ import { personId, siteName, siteUrl } from "@/lib/site";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, web developer et motion designer. Formé à l'HEAJ à Namur puis aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027.",
+    "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, motion designer et web developer. Formé à l'HEAJ à Namur puis en master direction artistique aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027.",
   alternates: {
     canonical: "/about",
   },
@@ -17,14 +17,14 @@ export const metadata: Metadata = {
     siteName,
     title: `About - ${siteName}`,
     description:
-      "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, web developer et motion designer. Formé à l'HEAJ à Namur puis aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027.",
+      "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, motion designer et web developer. Formé à l'HEAJ à Namur puis en master direction artistique aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027.",
     images: [{ url: "/opengraph-image.png", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
     title: `About - ${siteName}`,
     description:
-      "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, web developer et motion designer. Formé à l'HEAJ à Namur puis aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027.",
+      "Originaire de Bruxelles et basé à Paris, Fayssal Bidari est directeur artistique, motion designer et web developer. Formé à l'HEAJ à Namur puis en master direction artistique aux Gobelins, en recherche d'une alternance à Paris pour l'année scolaire 2026-2027.",
     images: ["/twitter-image.png"],
   },
 };
@@ -41,8 +41,8 @@ const aboutJsonLd = {
     url: siteUrl,
     jobTitle: [
       "Directeur Artistique",
-      "Développeur web",
       "Motion Designer",
+      "Développeur web",
       "Freelance Designer",
     ],
     birthPlace: { "@type": "Place", name: "Bruxelles" },
@@ -69,13 +69,13 @@ const aboutJsonLd = {
     ],
     knowsAbout: [
       "Direction artistique",
-      "Design digital",
-      "Développement web",
-      "Webflow",
       "Motion design",
       "Identité visuelle",
+      "Design digital",
       "Expériences numériques",
       "Création numérique interactive",
+      "Développement web",
+      "Webflow",
     ],
   },
 };
