@@ -1,4 +1,4 @@
-import { Camera, Mesh, Plane, Program, Renderer, Texture, Transform, Triangle } from "ogl";
+import { Camera, Geometry, Mesh, Plane, Program, Renderer, Texture, Transform, Triangle } from "ogl";
 
 // La chute. Défiler fait tomber la caméra : les projets sont des feuilles de papier (l'image
 // seule) qui flottent dans l'espace et remontent devant nous. Elles se courbent vraiment, comme
@@ -485,87 +485,67 @@ void main() {
 
 // ---------- le paysage : montagnes en fil de fer ----------
 
-// Le paysage. Fait pour être calme : le relief est fixe (rien ne glisse sous le maillage, donc
-// rien ne « bouillonne ») et c'est la caméra qui dérive lentement. Deux échelles seulement :
-// des collines douces devant, une grande chaîne au fond, aux crêtes larges (pas d'aiguilles).
-const mountainVertex = /* glsl */ `#version 300 es
+// ---------- le tunnel : l'ambiance d'un projet ouvert ----------
+
+// D'après la démo « R3F Portal » (Lusion) : un tunnel de grille qui avance vers nous sans fin,
+// des « briques » qui pulsent sur ses parois, et une torsion en spirale quand on fait défiler.
+// Ici, que des traits (aucun remplissage), gris neutre sur #202020, à peine là.
+// Chaque tronçon garde ses segments entiers : on boucle par tronçon (aTile), jamais par sommet,
+// donc aucun trait ne se coupe au moment où un tronçon repasse au fond.
+const TUNNEL_TILE = 700;
+const TUNNEL_TILES = 10;
+const tunnelVertex = /* glsl */ `#version 300 es
 in vec3 position;
-in vec2 uv;
+in float aTile;
+in float aBrick;
+in float aPhase;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
-uniform mat3 normalMatrix;
-uniform float uRise;
+uniform float uFlow;
+uniform float uTwist;
+uniform float uSpin;
+uniform float uTime;
 uniform float uSeed;
-out vec2 vGrid;
 out float vDepth;
-out vec3 vNormal;
-${NOISE}
-// Crête arrondie : 1 - |bruit| au carré, sur 3 octaves qui s'atténuent vite.
-float ridge(vec2 p) {
-  float h = 0.0;
-  float a = 0.62;
-  for (int i = 0; i < 3; i++) {
-    float r = 1.0 - abs(noise(p) * 2.0 - 1.0);
-    h += a * r * r;
-    p = p * 2.0 + 5.17;
-    a *= 0.32;
-  }
-  return h;
-}
-float heightAt(vec2 w) {
-  vec2 o = vec2(uSeed * 3.1, uSeed * 1.7);
-  // Une vallée dégagée au centre, sous le ruban.
-  float valley = mix(0.12, 1.0, smoothstep(300.0, 2400.0, abs(w.x)));
-  float near = ridge(w * 0.00045 + o) * 700.0 * valley;
-  float range = ridge(w * 0.00022 + o + 11.0) * 2600.0 * smoothstep(-2500.0, -6500.0, w.y);
-  return (near * smoothstep(400.0, -1800.0, w.y) + range) * uRise;
-}
+out float vGlow;
+out float vBrick;
+float hash11(float x) { return fract(sin(x * 127.1 + 311.7) * 43758.5453); }
 void main() {
-  vec2 world = position.xy * 10000.0 - vec2(0.0, 3000.0);
-  float h = heightAt(world);
-  float e = 40.0;
-  float hx = heightAt(world + vec2(e, 0.0)) - heightAt(world - vec2(e, 0.0));
-  float hz = heightAt(world + vec2(0.0, e)) - heightAt(world - vec2(0.0, e));
-  vNormal = normalize(normalMatrix * normalize(vec3(-hx, 2.0 * e, -hz)));
-  vec3 p = vec3(world.x, h - 520.0, world.y);
-  // La grille suit le sol (une case = 4 mailles du maillage) : les traits épousent le relief.
-  vGrid = world / 166.6667;
+  float L = ${TUNNEL_TILE.toFixed(1)} * ${TUNNEL_TILES.toFixed(1)};
+  float base = mod(aTile * ${TUNNEL_TILE.toFixed(1)} - uFlow, L);
+  vec3 p = position;
+  p.z = 300.0 - base - position.z;
+  // La torsion : plus c'est profond, plus ça tourne (la spirale de la démo).
+  float a = uSpin + uTwist * (-p.z) * 0.00035;
+  float c = cos(a), s = sin(a);
+  p.xy = mat2(c, -s, s, c) * p.xy;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
   vDepth = -mv.z;
+  // Les briques : une sur deux environ, tirée au sort par projet ; chacune pulse à son rythme.
+  float on = step(hash11(aPhase * 91.7 + uSeed), 0.5);
+  float beat = 0.5 + 0.5 * sin(uTime * (0.7 + fract(aPhase * 7.3) * 0.9) + aPhase * 6.2831);
+  vGlow = aBrick * on * pow(beat, 3.0);
+  vBrick = aBrick;
   gl_Position = projectionMatrix * mv;
 }
 `;
 
-// Fil de fer « vue technique » : faces noires (les lignes cachées restent cachées), quadrillage
-// anti-crénelé d'épaisseur constante. Quand les traits deviennent plus serrés que les pixels,
-// ils s'effacent au lieu de grésiller (c'est ce qui faisait « glitcher » le lointain).
-const mountainFragment = /* glsl */ `#version 300 es
+const tunnelFragment = /* glsl */ `#version 300 es
 precision highp float;
-in vec2 vGrid;
 in float vDepth;
-in vec3 vNormal;
+in float vGlow;
+in float vBrick;
 out vec4 color;
 uniform float uAlpha;
 uniform float uLight;
-uniform vec3 uBlack;
-float grid(vec2 g) {
-  vec2 w = fwidth(g);
-  vec2 d = abs(fract(g - 0.5) - 0.5) / max(w, 1e-5);
-  float line = 1.0 - min(min(d.x, d.y), 1.0);
-  // Densité : au-delà d'environ une case pour 4 px, le trait s'efface.
-  float dense = smoothstep(0.12, 0.28, max(w.x, w.y));
-  return line * (1.0 - dense);
-}
 void main() {
-  vec3 n = normalize(vNormal);
-  float diff = max(dot(n, normalize(vec3(-0.5, 0.65, 0.4))), 0.0);
-  float lines = grid(vGrid);
-  // Les arêtes vives se lisent un peu plus : le relief se dessine sans éclairage.
-  float slope = 1.0 - n.y;
-  float near = 1.0 - smoothstep(3000.0, 11000.0, vDepth);
-  float ink = lines * near * (0.07 + 0.08 * diff + 0.07 * slope) * uLight;
-  vec3 c = uBlack + vec3(ink);
-  color = vec4(c * uAlpha, uAlpha);
+  // Brouillard des deux côtés : rien ne naît ni ne disparaît d'un coup.
+  float fog = exp(-max(vDepth - 900.0, 0.0) * 0.00032);
+  float near = smoothstep(120.0, 700.0, vDepth);
+  float line = (1.0 - vBrick) * 0.15;
+  float brick = vGlow * 0.7;
+  float a = (line + brick) * fog * near * uAlpha * uLight;
+  color = vec4(vec3(0.93, 0.92, 0.9) * a, a);
 }
 `;
 
@@ -589,6 +569,8 @@ export class DrumGL {
   private skyProgram: Program;
   private skyMesh: Mesh;
   private light = 1;
+  private dive = 0;
+  private spin = 0;
   private yaw = 0;
   private hoverSlide = -1;
   // Page À propos : la feuille se retourne et devient le portrait.
@@ -700,7 +682,7 @@ export class DrumGL {
     this.gl = this.renderer.gl;
     this.gl.clearColor(0, 0, 0, 0);
     this.camera = new Camera(this.gl, { fov: FOV, near: 10, far: 20000 });
-    this.landCamera = new Camera(this.gl, { fov: 50, near: 10, far: 20000 });
+    this.landCamera = new Camera(this.gl, { fov: 60, near: 10, far: 20000 });
     this.blank = new Texture(this.gl);
 
     const textUniforms: Record<string, { value: unknown }> = {
@@ -764,27 +746,30 @@ export class DrumGL {
 
 
     this.mountainProgram = new Program(this.gl, {
-      vertex: mountainVertex,
-      fragment: mountainFragment,
+      vertex: tunnelVertex,
+      fragment: tunnelFragment,
       transparent: true,
-      depthTest: true,
-      depthWrite: true,
+      depthTest: false,
+      depthWrite: false,
       cullFace: false,
       uniforms: {
-        uRise: { value: 0 },
         uAlpha: { value: 0 },
         uLight: { value: 1 },
         uSeed: { value: 0 },
-        uBlack: { value: BLACK },
+        uFlow: { value: 0 },
+        uTwist: { value: 0 },
+        uSpin: { value: 0 },
+        uTime: { value: 0 },
       },
     });
-    this.mountainProgram.setBlendFunc(this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
+    // Additif : des traits de lumière, qui s'ajoutent là où ils se croisent.
+    this.mountainProgram.setBlendFunc(this.gl.ONE, this.gl.ONE);
     this.mountains = new Mesh(this.gl, {
-      geometry: new Plane(this.gl, { width: 1, height: 1, widthSegments: 240, heightSegments: 240 }),
+      geometry: this.tunnelGeometry(),
       program: this.mountainProgram,
+      mode: this.gl.LINES,
     });
-    // Le relief est calculé dans le shader : la boîte englobante du plan (un carré de 1 à l'origine)
-    // ne dit rien de sa taille réelle. Sans ça, la caméra haute « rate » l'origine et tout disparaît.
+    // Les positions sont recalculées dans le shader (boucle, torsion) : pas de test de visibilité.
     this.mountains.frustumCulled = false;
     this.mountains.setParent(this.land);
 
@@ -796,6 +781,87 @@ export class DrumGL {
     }
     this.resize();
     this.bind();
+  }
+
+  // Un tronçon de tunnel, répété : un cadre intérieur (rectangle, au format de l'écran) et une
+  // coque extérieure plus large reliés par des poutres, des lignes longitudinales sur chaque
+  // paroi, et des briques (petits traits) posées sur les parois.
+  private tunnelGeometry() {
+    const pos: number[] = [];
+    const tile: number[] = [];
+    const brick: number[] = [];
+    const phase: number[] = [];
+    let id = 0;
+    const seg = (a: number[], b: number[], k: number, isBrick = 0, ph = 0) => {
+      pos.push(...a, ...b);
+      tile.push(k, k);
+      brick.push(isBrick, isBrick);
+      phase.push(ph, ph);
+    };
+    const T = TUNNEL_TILE;
+    const rect = (hw: number, hh: number, z: number, k: number) => {
+      seg([-hw, -hh, z], [hw, -hh, z], k);
+      seg([hw, -hh, z], [hw, hh, z], k);
+      seg([hw, hh, z], [-hw, hh, z], k);
+      seg([-hw, hh, z], [-hw, -hh, z], k);
+    };
+    // Points répartis sur le périmètre d'un rectangle (pour les lignes longitudinales).
+    const rim = (hw: number, hh: number, nx: number, ny: number) => {
+      const pts: number[][] = [];
+      for (let i = 0; i <= nx; i++) {
+        const x = -hw + (2 * hw * i) / nx;
+        pts.push([x, -hh], [x, hh]);
+      }
+      for (let j = 1; j < ny; j++) {
+        const y = -hh + (2 * hh * j) / ny;
+        pts.push([-hw, y], [hw, y]);
+      }
+      return pts;
+    };
+    const IW = 1150;
+    const IH = 720;
+    const OW = IW * 1.65;
+    const OH = IH * 1.65;
+    for (let k = 0; k < TUNNEL_TILES; k++) {
+      // Cadre intérieur : deux anneaux par tronçon ; coque : un anneau.
+      rect(IW, IH, 0, k);
+      rect(IW, IH, T / 2, k);
+      rect(OW, OH, 0, k);
+      // Poutres du cadre vers la coque, aux coins et aux milieux.
+      for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1], [0, -1], [0, 1], [-1, 0], [1, 0]]) {
+        seg([sx * IW, sy * IH, 0], [sx * OW, sy * OH, 0], k);
+      }
+      for (const [x, y] of rim(IW, IH, 8, 5)) seg([x, y, 0], [x, y, T], k);
+      for (const [x, y] of rim(OW, OH, 4, 3)) seg([x, y, 0], [x, y, T], k);
+      // Briques : sur les parois intérieures, dans le sens de la profondeur ou en travers.
+      for (let b = 0; b < 26; b++) {
+        const h = (n: number) => hash(k * 131 + b * 17 + n);
+        const wall = Math.floor(h(1) * 4);
+        const u = h(2) * 2 - 1;
+        const z = h(3) * T;
+        const len = 30 + h(4) * 110;
+        const along = h(5) > 0.4;
+        const inset = 0.985;
+        let a: number[];
+        let c: number[];
+        if (wall < 2) {
+          const y = (wall === 0 ? -IH : IH) * inset;
+          a = [u * IW, y, z];
+          c = along ? [u * IW, y, z + len] : [u * IW + len, y, z];
+        } else {
+          const x = (wall === 2 ? -IW : IW) * inset;
+          a = [x, u * IH, z];
+          c = along ? [x, u * IH, z + len] : [x, u * IH + len * 0.6, z];
+        }
+        seg(a, c, k, 1, id++ * 0.6180339 + h(6));
+      }
+    }
+    return new Geometry(this.gl, {
+      position: { size: 3, data: new Float32Array(pos) },
+      aTile: { size: 1, data: new Float32Array(tile) },
+      aBrick: { size: 1, data: new Float32Array(brick) },
+      aPhase: { size: 1, data: new Float32Array(phase) },
+    });
   }
 
   private overlay(fragment: string, uniforms: Record<string, { value: unknown }>) {
@@ -1268,8 +1334,8 @@ export class DrumGL {
     this.landCamera.perspective({ aspect: this.W / this.H });
     // Vu d'en haut, le regard plonge : l'horizon passe au-dessus du ruban (vers 25 % de l'écran)
     // et les sommets lointains se découpent dans le ciel, au-dessus des sections.
-    this.landCamera.position.set(0, 760, 900);
-    this.landCamera.lookAt([0, 60, -2400]);
+    this.landCamera.position.set(0, 0, 0);
+    this.landCamera.lookAt([0, 0, -1000]);
   }
 
   // Position d'une ligne entre deux projets. Au repos, le titre commence sur la colonne 1
@@ -1356,11 +1422,16 @@ export class DrumGL {
 
     // Slider ouvert : même physique, sur l'axe horizontal, bornée aux images du projet.
     const count = this.slideCount();
-    // Le ruban est sans fin : pas de bornes. À la fin d'un geste, il se pose doucement sur la
-    // section la plus proche ; puis, laissé seul, il dérive lentement.
+    // Le ruban est sans fin : pas de bornes. À la fin d'un geste, il va toujours dans le sens du
+    // geste (un cran de molette = la section suivante, jamais un retour en arrière) ; puis,
+    // laissé seul, il dérive lentement.
     const loop = this.ribbonLoop(count);
     if (!this.dragging && now - this.lastInput > IDLE_MS && this.slideGesture !== null) {
-      this.slideTarget = Math.round(this.slideTarget);
+      const moved = this.slideTarget - this.slideGesture;
+      this.slideTarget =
+        Math.abs(moved) > 0.04
+          ? this.slideGesture + Math.sign(moved) * Math.max(1, Math.round(Math.abs(moved)))
+          : this.slideGesture;
       this.slideGesture = null;
     }
     if (this.opened && !this.dragging && this.clock >= 1 && now - this.lastInput > 2500) this.slideTarget += DRIFT * dt;
@@ -1708,17 +1779,28 @@ export class DrumGL {
       pp.uImage.value = [cur.w, cur.h];
     }
 
-    // Le paysage avance doucement ; glisser dans le slider le fait défiler plus vite.
-    // Une dérive lente et régulière ; le geste l'accélère à peine.
-    this.fly += dt * (0.06 + Math.min(Math.abs(this.slideVel), 4) * 0.03);
+    // Le tunnel. Faire défiler (dans un sens ou dans l'autre) fait plonger : on avance toujours
+    // vers le fond, plus vite, le champ s'ouvre et la spirale se resserre, toujours dans le même
+    // sens. La plongée monte en douceur et retombe lentement : aucun va-et-vient, même quand le
+    // ruban se pose sur sa section.
+    const wantDive = Math.min(Math.abs(this.slideVel), 4) / 4;
+    this.dive += (wantDive - this.dive) * (1 - Math.exp(-dt * (wantDive > this.dive ? 2.5 : 0.9)));
+    const dv = smooth(this.dive);
+    this.fly += dt * (80 + dv * 2600);
+    this.spin += dt * (0.01 + dv * 0.22);
+    const unwind = 1 - smooth(rise);
     const mu = this.mountainProgram.uniforms;
-    mu.uRise.value = smooth(rise);
     mu.uAlpha.value = rise;
-    // La caméra dérive à peine, comme portée à la main sur un plan fixe ; le ruban la tourne un peu.
-    const drift = this.fly;
-    this.landCamera.position.set(Math.sin(drift * 0.9) * 160, 760 + Math.sin(drift * 0.6) * 20, 900);
-    this.landCamera.lookAt([Math.sin(drift * 0.9) * 120, 60, -2400]);
-    this.land.rotation.y = this.slidePos * -0.02 + this.yaw;
+    mu.uFlow.value = this.fly;
+    mu.uTwist.value = unwind * 3.2 + dv * 1.1;
+    mu.uSpin.value = this.spin + unwind * 0.6;
+    this.landCamera.perspective({ fov: 60 + dv * 14, aspect: this.W / this.H });
+    mu.uTime.value = this.t;
+    // La caméra, au centre du tunnel, dérive à peine.
+    const drift = this.t * 0.25;
+    this.landCamera.position.set(Math.sin(drift) * 24, Math.cos(drift * 0.8) * 16, 0);
+    this.landCamera.lookAt([Math.sin(drift) * 10, Math.cos(drift * 0.8) * 6, -1000]);
+    this.land.rotation.y = this.yaw;
 
     this.renderer.render({ scene: this.gridMesh });
     this.renderer.render({ scene: this.back, camera: this.camera, clear: false });
@@ -1731,13 +1813,8 @@ export class DrumGL {
     const hr = hovered ? wrap(this.hoverSlide - this.slidePos, this.ribbonLoop(count)) : 0;
     this.yaw += (clamp(hr, -1.5, 1.5) * 0.05 - this.yaw) * (1 - Math.exp(-dt * 2));
     if (rise > 0) {
-      const su = this.skyProgram.uniforms;
-      su.uAlpha.value = rise;
-      su.uLight.value = this.light;
-      this.renderer.render({ scene: this.skyMesh, clear: false });
       mu.uLight.value = this.light;
       mu.uSeed.value = this.current * 17.3;
-      mu.uAlpha.value = rise;
       this.renderer.render({ scene: this.land, camera: this.landCamera, clear: false });
     }
     if (c > 0) this.renderer.render({ scene: this.stage, camera: this.camera, clear: false });
