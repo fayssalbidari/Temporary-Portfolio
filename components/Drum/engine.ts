@@ -485,109 +485,86 @@ void main() {
 
 // ---------- le paysage : montagnes en fil de fer ----------
 
+// Le paysage. Fait pour être calme : le relief est fixe (rien ne glisse sous le maillage, donc
+// rien ne « bouillonne ») et c'est la caméra qui dérive lentement. Deux échelles seulement :
+// des collines douces devant, une grande chaîne au fond, aux crêtes larges (pas d'aiguilles).
 const mountainVertex = /* glsl */ `#version 300 es
 in vec3 position;
 in vec2 uv;
 uniform mat4 modelViewMatrix;
 uniform mat4 projectionMatrix;
 uniform mat3 normalMatrix;
-uniform float uFly;
 uniform float uRise;
-uniform float uSeed;     // chaque projet a son paysage
+uniform float uSeed;
 out vec2 vGrid;
 out float vDepth;
-out float vHeight;
 out vec3 vNormal;
-out vec3 vView;
 ${NOISE}
-// Crêtes douces : de grandes formes, peu de détail fin (un relief de montagne, pas du bruit).
+// Crête arrondie : 1 - |bruit| au carré, sur 3 octaves qui s'atténuent vite.
 float ridge(vec2 p) {
   float h = 0.0;
-  float a = 0.6;
-  for (int i = 0; i < 4; i++) {
+  float a = 0.62;
+  for (int i = 0; i < 3; i++) {
     float r = 1.0 - abs(noise(p) * 2.0 - 1.0);
-    h += a * r * r * r;
-    p = p * 1.93 + 7.3;
-    a *= 0.38;
+    h += a * r * r;
+    p = p * 2.0 + 5.17;
+    a *= 0.32;
   }
   return h;
 }
-// Le relief en un point du sol : « at » dit où lire le relief (fixe dans le monde), « world » où
-// le point se trouve devant la caméra (pour la vallée et les chaînes du fond).
-float heightAt(vec2 at, vec2 world) {
-  vec2 g = at / 150.0 + vec2(uSeed, uSeed * 0.37);
-  // Une vallée au centre : le slider reste dégagé, les sommets montent sur les côtés et au loin.
-  float valley = smoothstep(200.0, 2000.0, abs(world.x)) * 0.8 + 0.2;
-  float far = smoothstep(-200.0, -3600.0, world.y);
-  // Au fond, une vraie chaîne : plusieurs plans de sommets qui ferment l'horizon.
-  float range = smoothstep(-2600.0, -6500.0, world.y);
-  return ridge(g * 0.1) * (1100.0 + 5200.0 * range) * mix(valley, 1.0, range) * (0.3 + 0.7 * far) * uRise;
+float heightAt(vec2 w) {
+  vec2 o = vec2(uSeed * 3.1, uSeed * 1.7);
+  // Une vallée dégagée au centre, sous le ruban.
+  float valley = mix(0.12, 1.0, smoothstep(300.0, 2400.0, abs(w.x)));
+  float near = ridge(w * 0.00045 + o) * 700.0 * valley;
+  float range = ridge(w * 0.00022 + o + 11.0) * 2600.0 * smoothstep(-2500.0, -6500.0, w.y);
+  return (near * smoothstep(400.0, -1800.0, w.y) + range) * uRise;
 }
 void main() {
-  vec2 world = position.xy * vec2(9000.0, 9000.0);
-  // Avancer sans que le relief « bouillonne » : faire glisser le bruit sous une grille fixe
-  // ré-échantillonne les sommets à chaque image (ils tremblent comme un égaliseur). On lit donc le
-  // relief à un endroit décalé de cases entières, et c'est le maillage qui glisse du reste.
-  float cell = 9000.0 / 240.0;
-  float shift = uFly * 600.0;
-  float snapped = floor(shift / cell) * cell;
-  vec2 at = world - vec2(0.0, snapped);
-  float h = heightAt(at, world);
-  // La normale par différences finies : un relief lisse, éclairé comme de la roche.
-  float e = 30.0;
-  float hx = heightAt(at + vec2(e, 0.0), world) - heightAt(at - vec2(e, 0.0), world);
-  float hz = heightAt(at + vec2(0.0, e), world) - heightAt(at - vec2(0.0, e), world);
+  vec2 world = position.xy * 10000.0 - vec2(0.0, 3000.0);
+  float h = heightAt(world);
+  float e = 40.0;
+  float hx = heightAt(world + vec2(e, 0.0)) - heightAt(world - vec2(e, 0.0));
+  float hz = heightAt(world + vec2(0.0, e)) - heightAt(world - vec2(0.0, e));
   vNormal = normalize(normalMatrix * normalize(vec3(-hx, 2.0 * e, -hz)));
-  vec3 p = vec3(world.x, h - 520.0, world.y + (shift - snapped));
-  vGrid = at / 150.0 + vec2(uSeed, uSeed * 0.37);
-  vHeight = h / 1500.0;
+  vec3 p = vec3(world.x, h - 520.0, world.y);
+  // La grille suit le sol (une case = 4 mailles du maillage) : les traits épousent le relief.
+  vGrid = world / 166.6667;
   vec4 mv = modelViewMatrix * vec4(p, 1.0);
-  vView = mv.xyz;
   vDepth = -mv.z;
   gl_Position = projectionMatrix * mv;
 }
 `;
 
-// Le relief en fil de fer, comme une vue « wireframe » de logiciel 3D : des faces noires (les
-// lignes cachées restent cachées), les arêtes du maillage en traits fins, quadrillage et
-// diagonales, et une croix à chaque nœud majeur. Très peu de lumière : juste assez pour sentir
-// le volume. Le lointain s'éteint dans le noir.
+// Fil de fer « vue technique » : faces noires (les lignes cachées restent cachées), quadrillage
+// anti-crénelé d'épaisseur constante. Quand les traits deviennent plus serrés que les pixels,
+// ils s'effacent au lieu de grésiller (c'est ce qui faisait « glitcher » le lointain).
 const mountainFragment = /* glsl */ `#version 300 es
 precision highp float;
 in vec2 vGrid;
 in float vDepth;
-in float vHeight;
 in vec3 vNormal;
-in vec3 vView;
 out vec4 color;
 uniform float uAlpha;
 uniform float uLight;
 uniform vec3 uBlack;
-// Trait d'épaisseur constante à l'écran, quelle que soit la distance.
-float wire(vec2 g, float px) {
+float grid(vec2 g) {
   vec2 w = fwidth(g);
-  vec2 l = abs(fract(g - 0.5) - 0.5) / max(w * px, 1e-4);
-  return 1.0 - min(min(l.x, l.y), 1.0);
+  vec2 d = abs(fract(g - 0.5) - 0.5) / max(w, 1e-5);
+  float line = 1.0 - min(min(d.x, d.y), 1.0);
+  // Densité : au-delà d'environ une case pour 4 px, le trait s'efface.
+  float dense = smoothstep(0.12, 0.28, max(w.x, w.y));
+  return line * (1.0 - dense);
 }
 void main() {
   vec3 n = normalize(vNormal);
-  float diff = max(dot(n, normalize(vec3(-0.55, 0.62, 0.35))), 0.0);
-  vec2 g = vGrid;
-  // Le quadrillage (une case = 4 mailles), ses diagonales (les triangles), et une maille sur
-  // deux en plus fin, pour que les pentes proches se lisent en détail.
-  float quad = wire(g, 1.0);
-  vec2 dg = vec2(g.x - g.y, 0.0);
-  float diag = 1.0 - min(abs(fract(dg.x - 0.5) - 0.5) / max(fwidth(dg.x), 1e-4), 1.0);
-  float fine = wire(g * 2.0, 1.0) * 0.25;
-  // Un point carré de 3 px aux nœuds toutes les 4 cases : des repères, comme sur un plan.
-  vec2 node = abs(fract(g / 4.0 + 0.5) - 0.5) * 4.0;
-  vec2 fw = max(fwidth(g), vec2(1e-4));
-  float pin = 1.0 - smoothstep(1.5, 2.5, max(node.x / fw.x, node.y / fw.y));
-  float lines = max(max(quad, diag * 0.55), max(fine, pin * 1.6));
-  float near = 1.0 - smoothstep(2500.0, 9000.0, vDepth);
-  float lit = 0.55 + 0.45 * diff;
-  vec3 ink = vec3(0.78) * lines * near * lit * 0.22 * uLight;
-  vec3 c = uBlack + vec3(0.012) * diff * near + ink;
+  float diff = max(dot(n, normalize(vec3(-0.5, 0.65, 0.4))), 0.0);
+  float lines = grid(vGrid);
+  // Les arêtes vives se lisent un peu plus : le relief se dessine sans éclairage.
+  float slope = 1.0 - n.y;
+  float near = 1.0 - smoothstep(3000.0, 11000.0, vDepth);
+  float ink = lines * near * (0.07 + 0.08 * diff + 0.07 * slope) * uLight;
+  vec3 c = uBlack + vec3(ink);
   color = vec4(c * uAlpha, uAlpha);
 }
 `;
@@ -794,7 +771,6 @@ export class DrumGL {
       depthWrite: true,
       cullFace: false,
       uniforms: {
-        uFly: { value: 0 },
         uRise: { value: 0 },
         uAlpha: { value: 0 },
         uLight: { value: 1 },
@@ -1736,10 +1712,13 @@ export class DrumGL {
     // Une dérive lente et régulière ; le geste l'accélère à peine.
     this.fly += dt * (0.06 + Math.min(Math.abs(this.slideVel), 4) * 0.03);
     const mu = this.mountainProgram.uniforms;
-    mu.uFly.value = this.fly;
     mu.uRise.value = smooth(rise);
     mu.uAlpha.value = rise;
-    this.land.rotation.y = this.slidePos * -0.03 + this.yaw;
+    // La caméra dérive à peine, comme portée à la main sur un plan fixe ; le ruban la tourne un peu.
+    const drift = this.fly;
+    this.landCamera.position.set(Math.sin(drift * 0.9) * 160, 760 + Math.sin(drift * 0.6) * 20, 900);
+    this.landCamera.lookAt([Math.sin(drift * 0.9) * 120, 60, -2400]);
+    this.land.rotation.y = this.slidePos * -0.02 + this.yaw;
 
     this.renderer.render({ scene: this.gridMesh });
     this.renderer.render({ scene: this.back, camera: this.camera, clear: false });

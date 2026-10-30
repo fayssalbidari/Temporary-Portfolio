@@ -98,14 +98,14 @@ export default function Poster({
         <i key={y} className={styles.line} style={{ top: `${y * 100}%`, "--i": i } as React.CSSProperties} />
       ))}
 
-      <span className={styles.arrow} style={{ top: `${(ROWS[0] + XH * 0.25) * 100}%` }}>
+      <span className={styles.arrow} style={{ top: `${(ROWS[0] + XH / 2) * 100}%` }}>
         ↓
       </span>
       {WORDS.map((w, i) => (
         <span
           key={w.text}
           className={styles.word}
-          style={{ top: `${(w.row === 0 ? ROWS[0] : ROWS[w.row]) * 100}%`, "--c": w.col, "--i": i } as React.CSSProperties}
+          style={{ top: `${ROWS[w.row] * 100}%`, "--c": w.col, "--i": i } as React.CSSProperties}
         >
           <span>
             <Scramble text={w.text} delay={250 + i * 120} duration={650} />
@@ -113,22 +113,28 @@ export default function Poster({
         </span>
       ))}
 
-      <p className={styles.aside} style={{ top: `${ROWS[0] * 100}%` }}>
+      <p className={styles.aside} style={{ top: `calc(${ROWS[0] * 100}% + 10px)` }}>
         <Scramble text="Sélection" delay={600} />
         <Scramble text="2024 — 2026" delay={660} />
       </p>
-      <span className={styles.vertical} style={{ top: `${ROWS[2] * 100}%` }}>
+      <span className={styles.vertical} style={{ top: `calc(${ROWS[2] * 100}% + 10px)` }}>
         {phase === "in" ? "" : "Chargement"}
       </span>
-      <span className={styles.count} style={{ top: `${(ROWS[3] - 0.01) * 100}%` }}>
+      <span className={styles.count} style={{ top: `calc(${ROWS[3] * 100}% + 10px)` }}>
         {String(shown).padStart(3, "0")}
       </span>
 
-      <p className={styles.lead}>
+      <p className={styles.lead} style={{ top: `calc(${(ROWS[3] + XH) * 100}% + 10px)` }}>
         <Scramble text="Alternance" delay={800} />
         <Scramble text="2026 — 2027" delay={860} />
       </p>
-      <svg className={styles.mark} viewBox="0 0 90 60" aria-hidden="true">
+      {/* Sa barre horizontale posée sur le dernier filet. */}
+      <svg
+        className={styles.mark}
+        viewBox="0 0 90 60"
+        aria-hidden="true"
+        style={{ top: `calc(${(ROWS[3] + XH) * 100}% - 30px)` }}
+      >
         <path d="M0 30H90M45 0V60M22 56L68 4" stroke="currentColor" strokeWidth="4" fill="none" />
       </svg>
 
@@ -141,7 +147,7 @@ export default function Poster({
   );
 
   return (
-    <div className={styles.poster} data-phase={phase} aria-hidden="true">
+    <div className={styles.poster} data-phase={phase} aria-hidden="true" style={{ "--xh": XH } as React.CSSProperties}>
       {/* La même affiche, une fois par bande : chaque copie n'en montre qu'une tranche, et part
           à gauche ou à droite à la sortie. */}
       {CUTS.slice(0, -1).map((top, i) => (

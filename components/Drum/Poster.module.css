@@ -117,27 +117,35 @@
   }
 }
 
-/* Les mots : la hauteur d'x posée entre deux filets, les hampes qui dépassent. */
+/* Les mots : la boîte du texte est rognée à la hauteur d'x et à la ligne de pied (text-box),
+   et la taille est calculée pour que cette hauteur d'x remplisse exactement l'écart entre deux
+   filets (hauteur d'x de Neue Montreal = 0,51 em, mesurée). La hauteur d'x touche le filet du
+   haut, le pied repose sur celui du bas ; hampes et jambages dépassent, comme sur l'affiche. */
 .word {
   position: absolute;
   left: calc(var(--m) + (var(--c) - 1) * (var(--col) + var(--g)));
-  font-size: 15.4vh;
+  font-size: calc(var(--xh) * 100vh / 0.51);
   line-height: 1;
   letter-spacing: -0.045em;
   white-space: nowrap;
-  margin-top: -0.53em;
-  overflow: hidden;
-  padding: 0 0.04em 0.06em;
+  text-box: trim-both ex alphabetic;
 }
 
 .word > span {
   display: block;
+  text-box: trim-both ex alphabetic;
   animation: rise 0.9s var(--cut) calc(0.2s + var(--i) * 0.12s) both;
 }
 
+/* Le mot monte de sous son filet : un masque qui s'ouvre vers le haut. */
 @keyframes rise {
   from {
-    transform: translateY(105%);
+    transform: translateY(40%);
+    clip-path: inset(100% -5% -60% -5%);
+  }
+  to {
+    transform: none;
+    clip-path: inset(-60% -5% -60% -5%);
   }
 }
 
@@ -146,6 +154,7 @@
   left: var(--m);
   font-size: 22px;
   line-height: 1;
+  transform: translateY(-50%);
 }
 
 .aside {
@@ -153,15 +162,24 @@
   left: calc(var(--m) + 7 * (var(--col) + var(--g)));
   margin: 0;
   display: grid;
+  gap: 4px;
   font-size: 13px;
-  line-height: 1.05;
+  line-height: 1;
   letter-spacing: -0.01em;
+}
+
+/* Petits textes : la hauteur de capitale posée sur un filet, comme sur l'affiche. */
+.aside > *,
+.lead > *,
+.count {
+  text-box: trim-both cap alphabetic;
 }
 
 .vertical {
   position: absolute;
   left: calc(var(--m) + 3 * (var(--col) + var(--g)));
   font-size: 11px;
+  line-height: 1;
   writing-mode: vertical-rl;
   letter-spacing: 0.02em;
 }
@@ -171,24 +189,24 @@
   position: absolute;
   right: var(--m);
   font-size: 13px;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 
 .lead {
   position: absolute;
-  top: 66%;
   left: var(--m);
   margin: 0;
   display: grid;
+  gap: 6px;
   font-size: 15px;
-  line-height: 1.2;
+  line-height: 1;
   letter-spacing: -0.01em;
 }
 
 .mark {
   position: absolute;
-  top: 70%;
-  right: calc(var(--m) + var(--col));
+  right: var(--m);
   width: 90px;
   height: 60px;
 }
