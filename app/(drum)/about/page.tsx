@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import AboutSection from "@/components/About/About";
 import JsonLd from "@/components/JsonLd/JsonLd";
 import { personId, siteName, siteUrl } from "@/lib/site";
 
@@ -82,9 +81,9 @@ const aboutJsonLd = {
 
 export default function About() {
   return (
+    // Le contenu visible de la page est dessiné par la scène du layout (components/Drum).
     <main>
       <JsonLd data={aboutJsonLd} />
-      <AboutSection />
     </main>
   );
 }

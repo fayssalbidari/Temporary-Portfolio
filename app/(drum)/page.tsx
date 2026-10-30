@@ -1,7 +1,3 @@
-import Hero from "@/components/Hero/Hero";
-import Slider from "@/components/Slider/Slider";
-import { toSliderProjects } from "@/components/Slider/data";
-import { getProjects } from "@/lib/content";
 import JsonLd from "@/components/JsonLd/JsonLd";
 import {
   personId,
@@ -75,14 +71,11 @@ const structuredData = {
   ],
 };
 
-export default async function Home() {
-  const rawProjects = await getProjects();
-  const projects = toSliderProjects(rawProjects);
+// La scène (le slider des projets) est dans le layout partagé avec À propos.
+export default function Home() {
   return (
     <main data-home style={{ position: "relative" }}>
       <JsonLd data={structuredData} />
-      <Hero />
-      {projects.length > 0 ? <Slider projects={projects} /> : null}
     </main>
   );
 }

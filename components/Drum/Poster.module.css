@@ -1,0 +1,254 @@
+/* L'affiche de préchargement, sur la grille de la Home (marges 48, gouttières 24, 12 colonnes). */
+.poster {
+  /* Neutre : un noir doux, des filets et un texte clairs. */
+  --ground: #202020;
+  --ink: #e9e7e3;
+  --shade: rgba(0, 0, 0, 0.28);
+  --hair: rgba(233, 231, 227, 0.32);
+  --m: calc(48 * var(--gx));
+  --g: calc(24 * var(--gx));
+  --col: calc((100vw - 2 * var(--m) - 11 * var(--g)) / 12);
+  --sheet-w: calc(4 * var(--col) + 3 * var(--g));
+  --sheet-h: calc(var(--sheet-w) * 0.64);
+  --cut: cubic-bezier(0.76, 0, 0.24, 1);
+
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  /* Rien n'est cliquable dessous tant que l'affiche est là ; elle laisse passer en partant. */
+  pointer-events: auto;
+  cursor: progress;
+  color: var(--ink);
+  overflow: hidden;
+}
+
+.strip {
+  position: absolute;
+  inset: 0;
+  will-change: transform;
+}
+
+/* Sortie : chaque bande part de son côté, du centre vers les bords. */
+.poster[data-phase="out"] {
+  pointer-events: none;
+}
+
+.poster[data-phase="out"] .strip {
+  transform: translateX(calc(var(--dir) * 104%));
+  transition: transform 0.85s var(--cut) var(--d);
+}
+
+.sheet {
+  position: absolute;
+  inset: 0;
+  background: var(--ground);
+}
+
+/* La bande verticale plus sombre : les colonnes 5–8, où la feuille se posera. */
+.band {
+  position: absolute;
+  top: 0;
+  bottom: 20%;
+  left: calc(var(--m) + 4 * (var(--col) + var(--g)));
+  width: var(--sheet-w);
+  background: var(--shade);
+  transform-origin: top;
+  animation: drop 0.9s var(--cut) 0.1s both;
+}
+
+.diagonal {
+  position: absolute;
+  left: 8%;
+  top: 112%;
+  width: 150vmax;
+  height: 15vh;
+  background: rgba(0, 0, 0, 0.2);
+  transform-origin: left top;
+  transform: rotate(-42deg);
+  animation: sweep 1.1s var(--cut) 0.2s both;
+}
+
+.floor {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 80%;
+  height: 14%;
+  background: var(--shade);
+}
+
+.rule {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  /* Dans la marge : le texte de la colonne 1 part net du bord de la grille. */
+  left: calc(var(--m) - 12 * var(--gx));
+  width: 1px;
+  background: var(--hair);
+  transform-origin: top;
+  animation: drop 0.8s var(--cut) both;
+}
+
+.line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--hair);
+  transform-origin: left;
+  animation: draw 0.8s var(--cut) calc(var(--i) * 45ms) both;
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes drop {
+  from {
+    transform: scaleY(0);
+  }
+}
+
+@keyframes sweep {
+  from {
+    transform: rotate(-42deg) scaleX(0);
+  }
+}
+
+/* Les mots : la hauteur d'x posée entre deux filets, les hampes qui dépassent. */
+.word {
+  position: absolute;
+  left: calc(var(--m) + (var(--c) - 1) * (var(--col) + var(--g)));
+  font-size: 15.4vh;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+  margin-top: -0.53em;
+  overflow: hidden;
+  padding: 0 0.04em 0.06em;
+}
+
+.word > span {
+  display: block;
+  animation: rise 0.9s var(--cut) calc(0.2s + var(--i) * 0.12s) both;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+.arrow {
+  position: absolute;
+  left: var(--m);
+  font-size: 22px;
+  line-height: 1;
+}
+
+.aside {
+  position: absolute;
+  left: calc(var(--m) + 7 * (var(--col) + var(--g)));
+  margin: 0;
+  display: grid;
+  font-size: 13px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+.vertical {
+  position: absolute;
+  left: calc(var(--m) + 3 * (var(--col) + var(--g)));
+  font-size: 11px;
+  writing-mode: vertical-rl;
+  letter-spacing: 0.02em;
+}
+
+/* Le compteur, posé comme le ® de l'affiche. */
+.count {
+  position: absolute;
+  right: var(--m);
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.lead {
+  position: absolute;
+  top: 66%;
+  left: var(--m);
+  margin: 0;
+  display: grid;
+  font-size: 15px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.mark {
+  position: absolute;
+  top: 70%;
+  right: calc(var(--m) + var(--col));
+  width: 90px;
+  height: 60px;
+}
+
+.foot {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  bottom: 2.4%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: var(--g);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+
+/* Le cadre de la première feuille, exactement là où la Home la pose. */
+.frame {
+  position: absolute;
+  left: calc(50% - var(--sheet-w) / 2);
+  top: calc(50% - var(--sheet-h) / 2);
+  width: var(--sheet-w);
+  height: var(--sheet-h);
+  overflow: hidden;
+  clip-path: inset(50% 0 50% 0);
+  animation: open-frame 0.7s var(--cut) 0.55s forwards;
+}
+
+@keyframes open-frame {
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.frame img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  visibility: hidden;
+  /* En noir et blanc, un peu éteintes, pendant le défilement. */
+  filter: grayscale(1) contrast(1.1) brightness(0.8);
+}
+
+.frame img[data-on="true"] {
+  visibility: visible;
+}
+
+.frame {
+  background: var(--shade);
+}
+
+/* Posée : l'image du premier projet en couleur — c'est déjà la feuille de la Home. */
+.poster:is([data-phase="land"], [data-phase="out"]) .frame img {
+  filter: none;
+  transition: filter 0.45s var(--cut);
+}
+
+.poster:is([data-phase="land"], [data-phase="out"]) .frame {
+  background: transparent;
+}

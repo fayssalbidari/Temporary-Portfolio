@@ -121,6 +121,9 @@ export default function PageTransition() {
 
       const url = new URL(href, window.location.href);
       if (url.origin !== window.location.origin) return;
+      // Entre la Home et À propos, c'est la scène elle-même qui fait la transition.
+      const drum = ["/", "/about"];
+      if (drum.includes(url.pathname) && drum.includes(pathRef.current)) return;
       // Le Studio Sanity garde sa navigation d'origine.
       if (url.pathname.startsWith("/studio") || pathRef.current.startsWith("/studio")) return;
 
